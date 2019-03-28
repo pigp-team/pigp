@@ -22,7 +22,6 @@ import java.util.Random;
  * @author feng
  * @date 2019/2/22 10:54
  * @since 1.0
- * 缺点： 还不知道怎么将滚动条设置消失
  */
 public class JKTimeMDJob {
 
