@@ -2,6 +2,7 @@ package com.feng.spider.job;
 
 import com.feng.spider.model.*;
 import com.feng.spider.utils.ChromDriverSpider;
+import com.feng.spider.utils.Conf;
 import com.google.common.collect.Lists;
 import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
@@ -47,8 +48,8 @@ public class JKTimeJob2 {
     public static SpiderEventNode buildEventConfList(int i){
 
         SpiderLoginEventNode loginEventNode = new SpiderLoginEventNode();
-        loginEventNode.setUserName("您的用户名");
-        loginEventNode.setPasswd("您的密码");
+        loginEventNode.setUserName(Conf.getConf("jk.username"));
+        loginEventNode.setPasswd(Conf.getConf("jk.pwd"));
         loginEventNode.setUserNameXPath(USERNAME_XPATH);
         loginEventNode.setPasswdXPath(PASSWORD_XPATH);
         loginEventNode.setLoginXPath(LOGIN_XPATH);

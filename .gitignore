@@ -22,6 +22,7 @@ target/
 *.patch
 *.tmp
 *.md
+*.pwd
 
 # system ignore
 .DS_Store
