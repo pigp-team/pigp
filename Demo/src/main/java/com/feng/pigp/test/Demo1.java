@@ -1,5 +1,6 @@
 package com.feng.pigp.test;
 
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -10,29 +11,20 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class Demo1 {
 
-    private static final Lock lock = new ReentrantLock();
-
-    static class Task implements Runnable{
-        @Override
-        public void run() {
-
-            while(true){
-                System.out.println("获取锁前");
-                synchronized (lock) {
-                    System.out.println("业务代码前");
-                }
-            }
-        }
-    }
+    static final AtomicLong atomicLong = new AtomicLong(0);
 
     public static void main(String[] args) throws InterruptedException {
 
-        synchronized (lock) {
-            Thread thread = new Thread(new Task());
-            thread.start();
-            System.out.println("线程被中断");
-            thread.interrupt();
-            thread.join();
+        while (true) {
+            new Thread(() -> {
+                try {
+                    System.out.println(Thread.currentThread().getName() + "_" + atomicLong.getAndAdd(1));
+                    Thread.sleep(1000000000000L);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }).start();
         }
+
     }
 }

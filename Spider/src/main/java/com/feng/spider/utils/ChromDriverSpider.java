@@ -28,6 +28,11 @@ public class ChromDriverSpider {
     public static final String DRIVER_PATH = "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chromedriver.exe";
     public static final int LOADING_WAITING_TIME = 3000;
 
+
+    public static void openUrl(WebDriver driver, String url){
+        driver.get(url);
+    }
+
     /**
      * 初始化driver对象
      * driver对象相当于是浏览器对象
@@ -222,10 +227,11 @@ public class ChromDriverSpider {
         WebElement element = driver.findElement(By.xpath(xPath));
         boolean isDsiplayed = element.isDisplayed();
         System.out.println("element is displayed : " + isDsiplayed);
-        if(!isDsiplayed){
+        /*if(!isDsiplayed){
             return element.getAttribute("innerHTML");
         }
-        return element.getText();
+        return element.getText();*/
+        return element.getAttribute("innerHTML");
     }
 
     public static String switchWindows(WebDriver driver, List<String> excludeWindows) {
@@ -354,5 +360,12 @@ public class ChromDriverSpider {
         //合并截图
         ImageUtils.mergeImage(savePath, eventNode.getNamespace() + eventNode.getCurNum() + "_%s.png", count);
         return String.format(eventNode.getNextArticleXPath(), eventNode.getCurNum() <= 1 ? 1 : 2);
+    }
+
+    public static int getSubElementCount(WebDriver driver, String xPath, String subPath) {
+
+        WebElement element = driver.findElement(By.xpath(xPath));
+        List<WebElement> elementList = element.findElements(By.xpath(xPath+subPath));
+        return elementList==null?0:elementList.size();
     }
 }

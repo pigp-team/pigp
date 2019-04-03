@@ -2,6 +2,7 @@ package com.feng.spider.job;
 
 import com.feng.spider.model.SpiderLoginEventNode;
 import com.feng.spider.utils.ChromDriverSpider;
+import com.feng.spider.utils.Conf;
 import com.feng.spider.utils.ImageUtils;
 import com.feng.spider.utils.PDFUtils;
 import com.google.common.collect.Lists;
@@ -27,7 +28,7 @@ public class JKTimeMDJob {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JKTimeMDJob.class);
 
-    private static final String TITLE = "从0开始学微服务";
+    private static final String TITLE = "深入剖析Kubernetes";
     private static final String ENTENRANCE_URL = "https://account.geekbang.org/login?redirect=https%3A%2F%2Ftime.geekbang.org%2F";
     private static final String USERNAME_XPATH = "/html/body/div[1]/div[2]/div[1]/div[1]/div[1]/input";
     private static final String PASSWORD_XPATH = "/html/body/div[1]/div[2]/div[1]/div[2]/input";
@@ -52,8 +53,8 @@ public class JKTimeMDJob {
             List<String> windowsList = Lists.newArrayList();
 
             SpiderLoginEventNode loginEventNode = new SpiderLoginEventNode();
-            loginEventNode.setUserName("您的用户名");
-            loginEventNode.setPasswd("您的密码");
+            loginEventNode.setUserName(Conf.getConf("jk.username"));
+            loginEventNode.setPasswd(Conf.getConf("jk.pwd"));
             loginEventNode.setUserNameXPath(USERNAME_XPATH);
             loginEventNode.setPasswdXPath(PASSWORD_XPATH);
             loginEventNode.setLoginXPath(LOGIN_XPATH);
@@ -101,7 +102,7 @@ public class JKTimeMDJob {
 
                     String articleTitle = ChromDriverSpider.getContent(driver, ARTICLE_TITLE_XPATH);
                     System.out.println("开始爬取文章：{}" + articleTitle);
-                    String savePath = TITLE + "/"+i + "_"+articleTitle+".md";
+                    String savePath = TITLE + "/"+(i>=10?i+"":"0"+i) + "_"+articleTitle+".md";
                     savePath = savePath.replaceAll("[?*|>< ]", "_");
                     File saveFile = new File(savePath);
                     if (saveFile.exists()) {

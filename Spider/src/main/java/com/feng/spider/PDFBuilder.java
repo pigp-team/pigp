@@ -1,8 +1,8 @@
 package com.feng.spider;
 
 import com.lowagie.text.pdf.BaseFont;
-import org.docx4j.org.xhtmlrenderer.pdf.ITextFontResolver;
-import org.docx4j.org.xhtmlrenderer.pdf.ITextRenderer;
+import org.xhtmlrenderer.pdf.ITextFontResolver;
+import org.xhtmlrenderer.pdf.ITextRenderer;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -17,7 +17,7 @@ public class PDFBuilder {
 
     public static void main(String[] args) throws Exception{
 
-        String inputFile = "D:\\strom_workspace\\platform\\aaa.html";
+        String inputFile = "C:\\Users\\feng\\Desktop\\129\\aaa.txt";
 
         String url = new File(inputFile).toURI().toURL().toString();
 
