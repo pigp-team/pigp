@@ -24,8 +24,6 @@ public class JKTimeSpider {
 
     public static void main(String[] args) throws IOException, InterruptedException {
 
-
-        System.out.println("A\\B测试与灰度发布必知必会".replaceAll("[?*|>< :\\\\]", "_"));
         // 设置ChromeDriver的路径
         System.setProperty("webdriver.chrome.driver", "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chromedriver.exe");
 
