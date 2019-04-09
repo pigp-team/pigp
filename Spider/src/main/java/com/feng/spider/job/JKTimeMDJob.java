@@ -28,7 +28,7 @@ public class JKTimeMDJob {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JKTimeMDJob.class);
 
-    private static final String TITLE = "MySQL实战45讲";
+    private static final String TITLE = "深入拆解 Java 虚拟机";
     private static final String ENTENRANCE_URL = "https://account.geekbang.org/login?redirect=https%3A%2F%2Ftime.geekbang.org%2F";
     private static final String USERNAME_XPATH = "/html/body/div[1]/div[2]/div[1]/div[1]/div[1]/input";
     private static final String PASSWORD_XPATH = "/html/body/div[1]/div[2]/div[1]/div[2]/input";
@@ -103,8 +103,7 @@ public class JKTimeMDJob {
 
                     String articleTitle = ChromDriverSpider.getContent(driver, ARTICLE_TITLE_XPATH);
                     System.out.println("开始爬取文章：{}" + articleTitle);
-                    String savePath = TITLE + "/"+(i>=10?i+"":"0"+i) + "_"+articleTitle+".md";
-                    savePath = savePath.replaceAll("[?*|>< ]", "_");
+                    String savePath = TITLE + "/"+(i>=10?i+"":"0"+i) + "_"+articleTitle.replaceAll("[?*|>< :/]", "_")+".md";
                     File saveFile = new File(savePath);
                     if (saveFile.exists()) {
                         continue;
@@ -149,4 +148,5 @@ public class JKTimeMDJob {
             spider(i);
         }
     }
+
 }
