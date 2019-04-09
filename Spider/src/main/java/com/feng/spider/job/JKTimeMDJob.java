@@ -28,15 +28,15 @@ public class JKTimeMDJob {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JKTimeMDJob.class);
 
-    private static final String TITLE = "深入剖析Kubernetes";
+    private static final String TITLE = "MySQL实战45讲";
     private static final String ENTENRANCE_URL = "https://account.geekbang.org/login?redirect=https%3A%2F%2Ftime.geekbang.org%2F";
     private static final String USERNAME_XPATH = "/html/body/div[1]/div[2]/div[1]/div[1]/div[1]/input";
     private static final String PASSWORD_XPATH = "/html/body/div[1]/div[2]/div[1]/div[2]/input";
     private static final String LOGIN_XPATH = "/html/body/div[1]/div[2]/div[1]/button";
-    private static final String SPECIAL_COLUMN_XPATH = "//*[@id=\"app\"]/div[1]/div[3]/div[2]/dl/dd[2]/a";
-    private static final String SPECIAL_COLUMN_LIST_TITLE_XPATH = "//*[@id=\"app\"]/div[1]/div[3]/ul/li[%s]/div[2]/h6";
-    private static final String SEPCIAL_COLUMN_LIST_ENTER_XPATH = "//*[@id=\"app\"]/div[1]/div[3]/ul/li[%s]/a";
-    private static final String SPECIAL_COLUMN_LIST_LOAD_MORE_XPATH = "//*[@id=\"app\"]/div[1]/button";
+    private static final String SPECIAL_COLUMN_XPATH = "//*[@id=\"app\"]/div[1]/div[2]/div/div[1]/div[1]/a[2]";
+    private static final String SPECIAL_COLUMN_LIST_TITLE_XPATH = "//*[@id=\"app\"]/div[1]/div[2]/div/div[2]/div[1]/div[2]/div[%s]/div[2]/div[1]/div[1]/h2";
+    private static final String SEPCIAL_COLUMN_LIST_ENTER_XPATH = "//*[@id=\"app\"]/div[1]/div[2]/div/div[2]/div[1]/div[2]/div[%s]/div[1]/a";
+    private static final String SPECIAL_COLUMN_LIST_LOAD_MORE_XPATH = "//*[@id=\"app\"]/div[1]/div[2]/div/div[2]/div[1]/div[3]/span";
     private static final String ARTICLE_LIST_NUM_CONTENT_XPATH = "//*[@id=\"app\"]/div[1]/div[1]/div[3]/div[1]/div[2]";
     private static final String ARTICLE_LIST_ENTER_XPATH = "//*[@id=\"app\"]/div[1]/div[1]/div[3]/div[4]/div[2]/div[%s]";
     private static final String ARTICLE_TITLE_XPATH = "//*[@id=\"app\"]/div[1]/div[2]/div[2]/div[1]/h1";
@@ -49,6 +49,7 @@ public class JKTimeMDJob {
 
     public static void spider(int i){
 
+        WebDriver driver = null;
         try {
             List<String> windowsList = Lists.newArrayList();
 
@@ -61,7 +62,7 @@ public class JKTimeMDJob {
             loginEventNode.setLoginURL(ENTENRANCE_URL);
 
             //1. 初始化浏览器
-            WebDriver driver = ChromDriverSpider.initDriver(-1, -1);
+            driver = ChromDriverSpider.initDriver(-1, -1);
             windowsList.add(driver.getWindowHandle());
 
             //2. 创建自己的工作空间
@@ -141,6 +142,9 @@ public class JKTimeMDJob {
             System.exit(0);
         }catch(Exception e) {
 
+            if(driver!=null){
+                driver.quit();
+            }
             System.out.println("开始下一次操作：" + i);
             spider(i);
         }

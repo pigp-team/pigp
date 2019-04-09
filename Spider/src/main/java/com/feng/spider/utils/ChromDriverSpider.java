@@ -162,7 +162,9 @@ public class ChromDriverSpider {
                 topicElement = driver.findElement(By.xpath(String.format(topicXPath, count)));
             }catch (Exception e){
                 //找不到触发加载更多
-                click(driver, loadXPath);
+                JavascriptExecutor js = (JavascriptExecutor)driver;
+                js.executeScript("document.documentElement.scrollTop=10000");
+                //click(driver, loadXPath);
             }
 
             if(topicElement==null){
