@@ -28,7 +28,7 @@ public class JKTimeMDJob {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JKTimeMDJob.class);
 
-    private static final String TITLE = "深入拆解 Java 虚拟机";
+    private static final String TITLE = "推荐系统三十六式";
     private static final String ENTENRANCE_URL = "https://account.geekbang.org/login?redirect=https%3A%2F%2Ftime.geekbang.org%2F";
     private static final String USERNAME_XPATH = "/html/body/div[1]/div[2]/div[1]/div[1]/div[1]/input";
     private static final String PASSWORD_XPATH = "/html/body/div[1]/div[2]/div[1]/div[2]/input";
@@ -36,7 +36,7 @@ public class JKTimeMDJob {
     private static final String SPECIAL_COLUMN_XPATH = "//*[@id=\"app\"]/div[1]/div[2]/div/div[1]/div[1]/a[2]";
     private static final String SPECIAL_COLUMN_LIST_TITLE_XPATH = "//*[@id=\"app\"]/div[1]/div[2]/div/div[2]/div[1]/div[2]/div[%s]/div[2]/div[1]/div[1]/h2";
     private static final String SEPCIAL_COLUMN_LIST_ENTER_XPATH = "//*[@id=\"app\"]/div[1]/div[2]/div/div[2]/div[1]/div[2]/div[%s]/div[1]/a";
-    private static final String SPECIAL_COLUMN_LIST_LOAD_MORE_XPATH = "//*[@id=\"app\"]/div[1]/div[2]/div/div[2]/div[1]/div[3]/span";
+    private static final String SPECIAL_COLUMN_LIST_LOAD_MORE_XPATH = "//*[@id=\"app\"]/div[1]/div[2]/div/div[2]/div[1]/div[3]/button";
     private static final String ARTICLE_LIST_NUM_CONTENT_XPATH = "//*[@id=\"app\"]/div[1]/div[1]/div[3]/div[1]/div[2]";
     private static final String ARTICLE_LIST_ENTER_XPATH = "//*[@id=\"app\"]/div[1]/div[1]/div[3]/div[4]/div[2]/div[%s]";
     private static final String ARTICLE_TITLE_XPATH = "//*[@id=\"app\"]/div[1]/div[2]/div[2]/div[1]/h1";

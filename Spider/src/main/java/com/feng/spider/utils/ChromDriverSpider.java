@@ -156,21 +156,29 @@ public class ChromDriverSpider {
      */
     public static void findTopicWithNextPage(WebDriver driver, String topic, String topicXPath, String enterXPath, String loadXPath){
         int count = 1;
+        int errCount = 0;
         while(true) {
             WebElement topicElement = null;
+
+            if(errCount>=20){
+                click(driver, loadXPath);
+            }
+
             try {
                 topicElement = driver.findElement(By.xpath(String.format(topicXPath, count)));
             }catch (Exception e){
                 //找不到触发加载更多
                 JavascriptExecutor js = (JavascriptExecutor)driver;
-                js.executeScript("document.documentElement.scrollTop=10000");
+                js.executeScript("document.documentElement.scrollTop=100000");
                 //click(driver, loadXPath);
+                errCount++;
             }
 
             if(topicElement==null){
                 continue;
             }
 
+            errCount=0;
             String tile = topicElement.getText();
             if(tile.equals(topic)){
                 click(driver, String.format(enterXPath, count));
