@@ -10,6 +10,8 @@
   <modules>
     <module>Demo</module>
     <module>Spider</module>
+      <module>pigp_api</module>
+    <module>netty</module>
   </modules>
   <packaging>pom</packaging>
 

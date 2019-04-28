@@ -28,7 +28,7 @@ public class JKTimeMDJob {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JKTimeMDJob.class);
 
-    private static final String TITLE = "推荐系统三十六式";
+    private static final String TITLE = "Android开发高手课";
     private static final String ENTENRANCE_URL = "https://account.geekbang.org/login?redirect=https%3A%2F%2Ftime.geekbang.org%2F";
     private static final String USERNAME_XPATH = "/html/body/div[1]/div[2]/div[1]/div[1]/div[1]/input";
     private static final String PASSWORD_XPATH = "/html/body/div[1]/div[2]/div[1]/div[2]/input";
@@ -110,7 +110,7 @@ public class JKTimeMDJob {
                     }
 
                     String content = "";
-                    String commit = ChromDriverSpider.getContent(driver, ARTICLE_COMMIT_XPATH);;
+                    String commit = ChromDriverSpider.getContent(driver, ARTICLE_COMMIT_XPATH);
                     try {
                         content = ChromDriverSpider.getContent(driver, String.format(ARTICLE_CONTENT_XPATH, 3));
                     }catch (NoSuchElementException e){
