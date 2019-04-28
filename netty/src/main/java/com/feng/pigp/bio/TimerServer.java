@@ -5,6 +5,9 @@ import com.feng.pigp.util.LogUtil;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author feng
@@ -13,6 +16,9 @@ import java.net.Socket;
  */
 public class TimerServer {
 
+    public static final ThreadPoolExecutor excutor= new ThreadPoolExecutor(4, 10, 5000, TimeUnit.MILLISECONDS,
+            new ArrayBlockingQueue<Runnable>(100));
+
     public void run(){
 
         int port = 9090;
@@ -20,7 +26,7 @@ public class TimerServer {
             ServerSocket serverSocket = new ServerSocket(port);
             while(true) {
                 Socket socket = serverSocket.accept();
-                new Thread(new TimerHandler(socket)).start();
+                excutor.execute(new TimerHandler(socket));
             }
         } catch (IOException e) {
             LogUtil.newInstanace().error("bind port exception : {}", port, e);
