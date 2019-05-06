@@ -14,11 +14,14 @@ public class EchoClientHandler extends ChannelHandlerAdapter {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
 
+        System.out.println("active");
+
         /*for(int i=0; i<=10000; i++) {
             JavaCode.Student student = new JavaCode.Student();
             student.buildUid(i).buildUserName("hhaha");
             ctx.write(student);
         }*/
+
 
         SubscribeReqProto.SubscribeReq req = SubscribeReqProto.SubscribeReq.newBuilder()
                 .setSubReqId(1)

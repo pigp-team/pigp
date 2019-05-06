@@ -11,6 +11,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
+import io.netty.handler.codec.marshalling.MarshallingEncoder;
 import io.netty.handler.codec.protobuf.ProtobufDecoder;
 import io.netty.handler.codec.protobuf.ProtobufEncoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
@@ -42,10 +43,14 @@ public class Service {
                         socketChannel.pipeline().addLast(new MessagePackEncode());
                         socketChannel.pipeline().addLast(new EchoHandler());*/
 
-                       socketChannel.pipeline().addLast(new ProtobufVarint32FrameDecoder());
+                       /*socketChannel.pipeline().addLast(new ProtobufVarint32FrameDecoder());
                        socketChannel.pipeline().addLast(new ProtobufDecoder(SubscribeReqProto.SubscribeReq.getDefaultInstance()));
                        socketChannel.pipeline().addLast(new ProtobufVarint32LengthFieldPrepender());
                        socketChannel.pipeline().addLast(new ProtobufEncoder());
+                       socketChannel.pipeline().addLast(new EchoHandler());*/
+
+                       socketChannel.pipeline().addLast(MarshallingCodeCFactory.getMarshallingDecoder());
+                       socketChannel.pipeline().addLast(MarshallingCodeCFactory.getMarshallingEncoder());
                        socketChannel.pipeline().addLast(new EchoHandler());
                     }
                 });

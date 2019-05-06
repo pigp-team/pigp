@@ -1,5 +1,6 @@
 package com.feng.pigp.endecode;
 
+import io.netty.bootstrap.ServerBootstrap;
 import org.msgpack.annotation.Message;
 
 import java.io.ByteArrayOutputStream;
@@ -33,7 +34,7 @@ public class JavaCode {
     }
 
     @Message
-    public static class Student{
+    public static class Student implements Serializable{
 
         private String userName;
         private int uid;

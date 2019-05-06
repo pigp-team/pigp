@@ -11,20 +11,31 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class Demo1 {
 
-    static final AtomicLong atomicLong = new AtomicLong(0);
+    public static void main(String[] args) {
 
-    public static void main(String[] args) throws InterruptedException {
+        System.out.println("start");
+        Thread.currentThread().interrupt();
+        System.out.println("thread is interrupted");
 
-        while (true) {
-            new Thread(() -> {
-                try {
-                    System.out.println(Thread.currentThread().getName() + "_" + atomicLong.getAndAdd(1));
-                    Thread.sleep(1000000000000L);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }).start();
+        if(Thread.interrupted()){
+            System.out.println("thread has interrupted");
+        }
+    }
+
+    public static boolean isInterrupted(){
+
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
 
+        if(Thread.interrupted()){
+            Thread.currentThread().interrupt();
+            System.out.println("thread is interrupted");
+            return true;
+        }
+
+        return false;
     }
 }
