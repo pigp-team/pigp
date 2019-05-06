@@ -11,6 +11,10 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
+import io.netty.handler.codec.protobuf.ProtobufDecoder;
+import io.netty.handler.codec.protobuf.ProtobufEncoder;
+import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
+import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 
 /**
  * @author feng
@@ -31,10 +35,16 @@ public class Client {
 
                     @Override
                     protected void initChannel(SocketChannel socketChannel) throws Exception {
-                        socketChannel.pipeline().addLast(new LengthFieldBasedFrameDecoder(65535, 0, 2, 0, 2));
+                       /* socketChannel.pipeline().addLast(new LengthFieldBasedFrameDecoder(65535, 0, 2, 0, 2));
                         socketChannel.pipeline().addLast(new MessagePackDecode());
                         socketChannel.pipeline().addLast(new LengthFieldPrepender(2));
                         socketChannel.pipeline().addLast(new MessagePackEncode());
+                        socketChannel.pipeline().addLast(new EchoClientHandler());*/
+
+                        socketChannel.pipeline().addLast(new ProtobufVarint32FrameDecoder());
+                        socketChannel.pipeline().addLast(new ProtobufDecoder(SubscribeReqProto.SubscribeReq.getDefaultInstance()));
+                        socketChannel.pipeline().addLast(new ProtobufVarint32LengthFieldPrepender());
+                        socketChannel.pipeline().addLast(new ProtobufEncoder());
                         socketChannel.pipeline().addLast(new EchoClientHandler());
                     }
                 });

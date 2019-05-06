@@ -14,11 +14,18 @@ public class EchoClientHandler extends ChannelHandlerAdapter {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
 
-        for(int i=0; i<=10000; i++) {
+        /*for(int i=0; i<=10000; i++) {
             JavaCode.Student student = new JavaCode.Student();
             student.buildUid(i).buildUserName("hhaha");
             ctx.write(student);
-        }
+        }*/
+
+        SubscribeReqProto.SubscribeReq req = SubscribeReqProto.SubscribeReq.newBuilder()
+                .setSubReqId(1)
+                .setUserName("hahah")
+                .setProductName("hehhe")
+                .setAddress("hah").build();
+        ctx.write(req);
         ctx.flush();
     }
 
