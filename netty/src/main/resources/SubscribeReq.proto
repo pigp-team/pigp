@@ -1,0 +1,17 @@
+syntax = "proto3";
+option java_package = "com.feng.pigp.endecode";
+option java_outer_classname = "SubscribeReqProto";
+
+message SubscribeReq{
+
+    int32 subReqId = 1;
+    string  userName = 2;
+    string productName = 3;
+    string address = 4;
+}
+
+message SubscribeResp{
+    int32 subReqD = 1;
+    int32 respCode = 2;
+    string desc = 3;
+}

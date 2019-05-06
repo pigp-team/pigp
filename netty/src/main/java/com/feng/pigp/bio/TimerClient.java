@@ -26,12 +26,12 @@ public class TimerClient {
             bw.write("query time");
             bw.newLine();
             bw.flush();
-            LogUtil.newInstanace().info("request send ");
+            LogUtil.getLogger().info("request send ");
 
             String response = br.readLine();
-            LogUtil.newInstanace().info("response is : {}", response);
+            LogUtil.getLogger().info("response is : {}", response);
         } catch (IOException e) {
-            LogUtil.newInstanace().error("timer client connect exception : {}", port, e);
+            LogUtil.getLogger().error("timer client connect exception : {}", port, e);
         }
     }
 

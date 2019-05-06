@@ -29,7 +29,7 @@ public class TimerServer {
                 excutor.execute(new TimerHandler(socket));
             }
         } catch (IOException e) {
-            LogUtil.newInstanace().error("bind port exception : {}", port, e);
+            LogUtil.getLogger().error("bind port exception : {}", port, e);
         }
     }
 
@@ -48,13 +48,13 @@ public class TimerServer {
 
         @Override
         public void run() {
-            LogUtil.newInstanace().info("socket has connected");
+            LogUtil.getLogger().info("socket has connected");
             try {
                 BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 
                 String request = br.readLine();
-                LogUtil.newInstanace().info("request={}", request);
+                LogUtil.getLogger().info("request={}", request);
                 if("query time".equals(request)){
                     bw.write("current time : " + System.currentTimeMillis());
                 }else{
@@ -63,7 +63,7 @@ public class TimerServer {
                 bw.newLine();
                 bw.flush();
             } catch (IOException e) {
-                LogUtil.newInstanace().error("socket read write exception", e);
+                LogUtil.getLogger().error("socket read write exception", e);
             }
         }
     }

@@ -12,7 +12,7 @@ public class LogUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LogUtil.class);
 
-    public static Logger newInstanace(){
+    public static Logger getLogger(){
         return LOGGER;
     }
 }
