@@ -8,6 +8,6 @@ public class App
 {
     public static void main( String[] args )
     {
-        System.out.println(Math.abs("lrhf3457".hashCode())%1000);
+        System.out.println(Math.abs("yxst2796".hashCode())%64);
     }
 }
