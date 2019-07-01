@@ -237,10 +237,10 @@ public class ChromDriverSpider {
         WebElement element = driver.findElement(By.xpath(xPath));
         boolean isDsiplayed = element.isDisplayed();
         System.out.println("element is displayed : " + isDsiplayed);
-        /*if(!isDsiplayed){
-            return element.getAttribute("innerHTML");
+        if(isDsiplayed){
+            return element.getText();
         }
-        return element.getText();*/
+
         return element.getAttribute("innerHTML");
     }
 

@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class Test {
 
-    private static final int PRODUCE_NUMBER = 100;
+    private static final int PRODUCE_NUMBER = 8;
     private static final int BATCH = 100000;
     private static final Random RANDOM = new Random();
 
@@ -31,8 +31,8 @@ public class Test {
                 for(int i=0; i<BATCH; i++) {
                     int count = RANDOM.nextInt();
                     long start = System.currentTimeMillis();
-                    //mpscLinkedQueue.offer(count);
-                    linkedBlockingQueue.put(count);
+                    mpscLinkedQueue.offer(count);
+                    //linkedBlockingQueue.put(count);
                     long time = System.currentTimeMillis()-start;
                     if(time > 0) {
                         System.out.println(Thread.currentThread().getName() + ":" + i + ":" + time);
@@ -54,8 +54,8 @@ public class Test {
                 startCountDownLatch.await();
                 while(true){
 
-                    //mpscLinkedQueue.poll();
-                    linkedBlockingQueue.take();
+                    mpscLinkedQueue.poll();
+                    //linkedBlockingQueue.take();
                     consumerNum.incrementAndGet();
                 }
             } catch (InterruptedException e) {
