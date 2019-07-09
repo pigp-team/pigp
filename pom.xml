@@ -12,6 +12,7 @@
     <module>Spider</module>
       <module>pigp_api</module>
     <module>netty</module>
+      <module>fans</module>
   </modules>
   <packaging>pom</packaging>
 
