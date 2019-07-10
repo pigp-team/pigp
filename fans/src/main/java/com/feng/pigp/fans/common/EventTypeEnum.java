@@ -7,5 +7,18 @@ package com.feng.pigp.fans.common;
  */
 public enum EventTypeEnum {
 
-    LIKE, SHARE, COMMENT,ATTENTION
+    LIKE(1),   //点赞
+    SHARE(2), //分享
+    COMMENT(4), //评论
+    ATTENTION(8); //关注
+
+    private int id;
+
+    EventTypeEnum(int id) {
+        this.id = id;
+    }
+
+    public int getId(){
+        return this.id;
+    }
 }

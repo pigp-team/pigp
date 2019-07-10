@@ -61,9 +61,10 @@ public class ChromDriverSpiderUtil {
         return driver;
     }
 
-    public static void inputAndClick(WebDriver webDriver, SpiderInputClickNode node){
+    public static void inputAndClick(WebDriver webDriver, SpiderInputClickNode node) throws InterruptedException {
         WebElement webElement = webDriver.findElement(By.xpath(node.getContentXPath()));
         webElement.sendKeys(node.getContent());
+        Thread.sleep(1000);
         ChromDriverSpiderUtil.click(webDriver, node.getClickXPath());
     }
 

@@ -2,7 +2,6 @@ package com.feng.pigp.fans.service;
 
 import com.feng.pigp.fans.model.Goal;
 import com.feng.pigp.fans.model.User;
-import com.feng.pigp.fans.model.chrom.SpiderLoginEventNode;
 import com.feng.pigp.util.GsonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +55,7 @@ public class EventLoopService {
                     //进入该用户的首页
                     chromHandlerService.enterUserIndex(goal.getUserId());
                     //处理该用户相关的操作
-
+                    System.out.println("哈哈哈");
 
                 }
 

@@ -44,6 +44,7 @@ public class GoalPoolService {
         Goal goal = new Goal();
         goal.setEventTypeEnum(EventTypeEnum.LIKE);
         goal.setCountLimit(10);
+        goal.setUserId("Logic-Luo");
         goals.drainTo(result);
         result.add(goal);
         return result;

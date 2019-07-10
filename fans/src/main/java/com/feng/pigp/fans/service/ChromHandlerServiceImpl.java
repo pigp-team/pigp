@@ -42,8 +42,12 @@ public class ChromHandlerServiceImpl implements HandlerService {
         SpiderInputClickNode node = new SpiderInputClickNode();
         node.setClickXPath(Common.SINA_SEARCH_BUTTON);
         node.setContent(userId);
-        node.setContentXPath(Common.SINA_SEARCH_BUTTON);
-        ChromDriverSpiderUtil.inputAndClick(getWebDriver(), node);
+        node.setContentXPath(Common.SINA_SEARCH_INPUT);
+        try {
+            ChromDriverSpiderUtil.inputAndClick(getWebDriver(), node);
+        } catch (InterruptedException e) {
+            LOGGER.error("input and click error", e);
+        }
         return true;
     }
 
