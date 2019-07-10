@@ -1,5 +1,6 @@
 package com.feng.pigp.test;
 
+import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -13,6 +14,10 @@ public class Demo1 {
 
     public static void main(String[] args) {
 
+
+/*
+        ByteBuffer byteBuffer = ByteBuffer.allocateDirect(1024);
+
         System.out.println("start");
         Thread.currentThread().interrupt();
         System.out.println("thread is interrupted");
@@ -20,6 +25,10 @@ public class Demo1 {
         if(Thread.interrupted()){
             System.out.println("thread has interrupted");
         }
+*/
+
+
+        System.out.println(Math.abs("kdrynvf8128".hashCode() % 1000));
     }
 
     public static boolean isInterrupted(){

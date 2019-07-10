@@ -31,6 +31,7 @@ public class Service {
 
                         ch.pipeline().addLast(new NettyMessageDecoder(65536, 4, 4));
                         ch.pipeline().addLast(new NettyMessageEncoder());
+                        ch.pipeline().addLast(new RegisterHandler());
                         ch.pipeline().addLast(new ServerHandler());
                     }
                 });

@@ -10,9 +10,10 @@
   <modules>
     <module>Demo</module>
     <module>Spider</module>
-      <module>pigp_api</module>
+    <module>pigp_api</module>
     <module>netty</module>
-      <module>algorithm</module>
+    <module>algorithm</module>
+    <module>fans</module>
   </modules>
   <packaging>pom</packaging>
 
@@ -57,6 +58,9 @@
         <artifactId>commons-lang3</artifactId>
         <version>3.8.1</version>
       </dependency>
+
+
+
 
     </dependencies>
   </dependencyManagement>
