@@ -55,6 +55,12 @@ public class EventLoopService {
                     //进入该用户的首页
                     chromHandlerService.enterUserIndex(goal.getUserId());
                     //处理该用户相关的操作
+                    Goal curGoal = goal;
+                    while(curGoal!=null){
+                        processOperation(curGoal);
+                        curGoal = goal.getNext();
+                    }
+
                     System.out.println("哈哈哈");
 
                 }
@@ -67,6 +73,24 @@ public class EventLoopService {
         }
 
     }
+
+    private void processOperation(Goal curGoal) {
+
+        switch (curGoal.getEventType()){
+            case LIKE:
+                chromHandlerService.like(curGoal);
+                break;
+            case SHARE:
+                break;
+            case ATTENTION:
+                break;
+            case COMMENT:
+                break;
+            default:
+                break;
+        }
+    }
+
     //1. 获取目标
     //2. 获取用户
     //3. 登录

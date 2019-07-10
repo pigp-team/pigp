@@ -2,6 +2,8 @@ package com.feng.pigp.fans.model;
 
 import com.feng.pigp.fans.common.EventTypeEnum;
 
+import java.util.List;
+
 /**
  * @author feng
  * @date 2019/7/10 9:25
@@ -9,12 +11,14 @@ import com.feng.pigp.fans.common.EventTypeEnum;
  */
 public class Goal {
 
-    private EventTypeEnum eventTypeEnum;
+    private EventTypeEnum eventType;
     private int countLimit;
     private int curCount;
 
     private String userId;
     private String matchContent;
+
+    private Goal next;
 
     public int getCurCount() {
         return curCount;
@@ -32,20 +36,21 @@ public class Goal {
         this.userId = userId;
     }
 
+
+    public EventTypeEnum getEventType() {
+        return eventType;
+    }
+
+    public void setEventType(EventTypeEnum eventType) {
+        this.eventType = eventType;
+    }
+
     public String getMatchContent() {
         return matchContent;
     }
 
     public void setMatchContent(String matchContent) {
         this.matchContent = matchContent;
-    }
-
-    public EventTypeEnum getEventTypeEnum() {
-        return eventTypeEnum;
-    }
-
-    public void setEventTypeEnum(EventTypeEnum eventTypeEnum) {
-        this.eventTypeEnum = eventTypeEnum;
     }
 
     public int getCountLimit() {
@@ -58,5 +63,13 @@ public class Goal {
 
     public boolean isFinished(){
         return this.curCount>=this.countLimit;
+    }
+
+    public Goal getNext() {
+        return next;
+    }
+
+    public void setNext(Goal next) {
+        this.next = next;
     }
 }

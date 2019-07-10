@@ -2,6 +2,7 @@ package com.feng.pigp.fans.service;
 
 import com.feng.pigp.fans.common.Common;
 import com.feng.pigp.fans.exception.FansException;
+import com.feng.pigp.fans.model.Goal;
 import com.feng.pigp.fans.model.User;
 import com.feng.pigp.fans.model.chrom.SpiderInputClickNode;
 import com.feng.pigp.fans.model.chrom.SpiderLoginEventNode;
@@ -60,6 +61,11 @@ public class ChromHandlerServiceImpl implements HandlerService {
             }
         }
 
+        return true;
+    }
+
+    @Override
+    public boolean like(Goal curGoal) {
         return true;
     }
 

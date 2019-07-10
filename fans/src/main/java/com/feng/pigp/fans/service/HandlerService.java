@@ -1,5 +1,6 @@
 package com.feng.pigp.fans.service;
 
+import com.feng.pigp.fans.model.Goal;
 import com.feng.pigp.fans.model.User;
 import com.feng.pigp.fans.model.chrom.SpiderInputClickNode;
 
@@ -15,4 +16,6 @@ public interface HandlerService {
     boolean inputAndClick(String userId);
 
     boolean enterUserIndex(String userId);
+
+    boolean like(Goal curGoal);
 }
