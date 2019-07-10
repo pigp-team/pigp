@@ -7,5 +7,5 @@ package com.feng.pigp.fans.common;
  */
 public enum EventTypeEnum {
 
-    LIKE, SHARE, COMMENT
+    LIKE, SHARE, COMMENT,ATTENTION
 }

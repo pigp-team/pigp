@@ -11,6 +11,34 @@ public class Goal {
 
     private EventTypeEnum eventTypeEnum;
     private int countLimit;
+    private int curCount;
+
+    private String userId;
+    private String matchContent;
+
+    public int getCurCount() {
+        return curCount;
+    }
+
+    public void setCurCount(int curCount) {
+        this.curCount = curCount;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public String getMatchContent() {
+        return matchContent;
+    }
+
+    public void setMatchContent(String matchContent) {
+        this.matchContent = matchContent;
+    }
 
     public EventTypeEnum getEventTypeEnum() {
         return eventTypeEnum;
@@ -26,5 +54,9 @@ public class Goal {
 
     public void setCountLimit(int countLimit) {
         this.countLimit = countLimit;
+    }
+
+    public boolean isFinished(){
+        return this.curCount>=this.countLimit;
     }
 }
