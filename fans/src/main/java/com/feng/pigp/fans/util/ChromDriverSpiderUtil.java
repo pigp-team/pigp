@@ -85,22 +85,24 @@ public class ChromDriverSpiderUtil {
      */
     public static void login(WebDriver driver, SpiderLoginEventNode eventNode){
 
-        try {
-            LOGGER.info("start login, userName={}", eventNode.getUserName());
-            //打开页面
-            driver.get(eventNode.getLoginURL());
-            Thread.sleep(10000);
-            //查找元素
-            WebElement element = driver.findElement(By.xpath(eventNode.getUserNameXPath()));
-            element.sendKeys(eventNode.getUserName());
-            Thread.sleep(1000);
-            WebElement pwdElement = driver.findElement(By.xpath(eventNode.getPasswdXPath()));
-            pwdElement.sendKeys(eventNode.getPasswd());
-            Thread.sleep(1000);
-            click(driver, eventNode.getLoginXPath());
-            LOGGER.info("{} : login success");
-        }catch (Exception e){
-            LOGGER.error("login error", e);
+        for(int i=0; i<10; i++) {
+            try {
+                Thread.sleep(1000);
+                LOGGER.info("start login, userName={}", eventNode.getUserName());
+                //打开页面
+                driver.get(eventNode.getLoginURL());
+                Thread.sleep(5000);
+                //查找元素
+                WebElement element = driver.findElement(By.xpath(eventNode.getUserNameXPath()));
+                element.sendKeys(eventNode.getUserName());
+                WebElement pwdElement = driver.findElement(By.xpath(eventNode.getPasswdXPath()));
+                pwdElement.sendKeys(eventNode.getPasswd());
+                click(driver, eventNode.getLoginXPath());
+                LOGGER.info("{} : login success");
+                return;
+            } catch (Exception e) {
+                LOGGER.error("login error", e);
+            }
         }
     }
 
@@ -203,6 +205,33 @@ public class ChromDriverSpiderUtil {
         }
     }
 
+
+    public static void clickOrNot(WebDriver driver, String key, String content, String xPath){
+
+        WebElement clickElement = driver.findElement(By.xpath(xPath));
+
+        if(StringUtils.isNotEmpty(key)) {
+            String value = clickElement.getAttribute(key);
+            if (!content.equals(value)) {
+                return;
+            }
+        }
+
+        boolean isDisplay = clickElement.isDisplayed();
+        if(!isDisplay){
+            //滚动
+            JavascriptExecutor js = (JavascriptExecutor)driver;
+            js.executeScript("arguments[0].scrollIntoView()", clickElement);
+        }
+        clickElement.click();
+        //休眠2s等待页面加载
+        try {
+            Thread.sleep(LOADING_WAITING_TIME);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static boolean find(WebDriver driver, String xPath){
 
         try {
@@ -225,14 +254,23 @@ public class ChromDriverSpiderUtil {
 
     public static String getContent(WebDriver driver, String xPath) {
 
-        WebElement element = driver.findElement(By.xpath(xPath));
-        boolean isDsiplayed = element.isDisplayed();
-        System.out.println("element is displayed : " + isDsiplayed);
-        if(isDsiplayed){
-            return element.getText();
+        for(int i=0; i<10; i++) {
+            try {
+                Thread.sleep(1000);
+                WebElement element = driver.findElement(By.xpath(xPath));
+                boolean isDsiplayed = element.isDisplayed();
+                System.out.println("element is displayed : " + isDsiplayed);
+                if (isDsiplayed) {
+                    return element.getText();
+                }
+
+                return element.getAttribute("innerHTML");
+            } catch (Exception e) {
+                LOGGER.error("getContent error", e);
+            }
         }
 
-        return element.getAttribute("innerHTML");
+        return null;
     }
 
     public static String switchWindows(WebDriver driver, List<String> excludeWindows) {
@@ -293,7 +331,7 @@ public class ChromDriverSpiderUtil {
             try {
                 String content = getContent(driver, String.format(node.getContentXPath(), i));
                 if(StringUtils.isNotEmpty(content) && content.contains(node.getMatchContent())){
-                    click(driver, String.format(node.getClickXPath(), i));
+                    clickOrNot(driver, node.getClickKey(), node.getClickContent(),String.format(node.getClickXPath(), i));
                     return i;
                 }
             }catch (Exception e){

@@ -30,7 +30,12 @@ public class ChromHandlerServiceImpl implements HandlerService {
     public boolean login(User user) {
 
         SpiderLoginEventNode node = initLoginEventNode(user);
-        WebDriver webDriver = getWebDriver();
+        if(threadLocal.get()!=null){
+            threadLocal.get().quit();
+        }
+
+        WebDriver webDriver = ChromDriverSpiderUtil.initDriver(0, 0);
+        threadLocal.set(webDriver);
         ChromDriverSpiderUtil.login(webDriver, node);
         return true;
     }
@@ -60,10 +65,12 @@ public class ChromHandlerServiceImpl implements HandlerService {
     }
 
     @Override
-    public boolean like(Goal goal) {
+    public boolean like(Goal goal) { //需要判断
         SpiderMatchClickNode node = new SpiderMatchClickNode();
         node.setClickXPath(Common.SINA_TOPIC_LIKE);
         node.setContentXPath(Common.SINA_TOPIC_TITLE);
+        node.setClickContent("赞");
+        node.setClickKey("title");
         node.setStratIndex(2);
         node.setEndIndex(12);
         node.setMatchContent(goal.getMatchContent());

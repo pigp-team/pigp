@@ -15,6 +15,9 @@ public class SpiderMatchClickNode {
     private int stratIndex;
     private int endIndex;
 
+    private String clickContent; //匹配才点击，例如如果已经点赞了，那么就不点了
+    private String clickKey;
+
     public int getStratIndex() {
         return stratIndex;
     }
@@ -53,5 +56,21 @@ public class SpiderMatchClickNode {
 
     public void setClickXPath(String clickXPath) {
         this.clickXPath = clickXPath;
+    }
+
+    public String getClickContent() {
+        return clickContent;
+    }
+
+    public void setClickContent(String clickContent) {
+        this.clickContent = clickContent;
+    }
+
+    public String getClickKey() {
+        return clickKey;
+    }
+
+    public void setClickKey(String clickKey) {
+        this.clickKey = clickKey;
     }
 }
