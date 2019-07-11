@@ -66,8 +66,6 @@ public class EventLoopService {
                 }
 
             }
-
-
         }catch (Throwable e){
             LOGGER.error("event loop error", e);
         }

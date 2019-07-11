@@ -32,4 +32,13 @@ public class Common {
 
     public static String SINA_TOPIC_COMMENT_INPUT = "//*[@id=\"Pl_Official_MyProfileFeed__20\"]/div/div[%s]/div[3]/div/div/div[2]/div[2]/div[1]/textarea";
     public static String SINA_TOPIC_COMMENT_BUTTON = "//*[@id=\"Pl_Official_MyProfileFeed__20\"]/div/div[%s]/div[3]/div/div/div[2]/div[2]/div[2]/div[1]/a";
+
+    public static String FULL_COMMENT_USERNAME = "//*[@id=\"Pl_Official_WeiboDetail__73\"]/div/div/div/div[1]/div[4]/div[1]/a[1]";
+    public static String FULL_COMMENT_ATTENTION = "//*[@id=\"Pl_Official_WeiboDetail__73\"]/div/div/div/div[1]/div[3]/div[2]/a";
+
+    public static String FULL_LOGIN_USERNAME = "//*[@id=\"layer_15628458207771\"]/div[2]/div[3]/div[3]/div[1]/input";
+    public static String FULL_LOGIN_PWD = "//*[@id=\"layer_15628458207771\"]/div[2]/div[3]/div[3]/div[2]/input";
+    public static String Full_LOGIN_BUTTON = "//*[@id=\"layer_15628458207771\"]/div[2]/div[3]/div[3]/div[6]/a";
+
+    public static String Full_LIKE = "//*[@id=\"Pl_Official_WeiboDetail__73\"]/div/div/div/div[2]/div/ul/li[4]/a";
 }

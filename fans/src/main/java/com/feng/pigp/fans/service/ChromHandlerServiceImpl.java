@@ -2,6 +2,7 @@ package com.feng.pigp.fans.service;
 
 import com.feng.pigp.fans.common.Common;
 import com.feng.pigp.fans.exception.FansException;
+import com.feng.pigp.fans.model.FullGoal;
 import com.feng.pigp.fans.model.Goal;
 import com.feng.pigp.fans.model.User;
 import com.feng.pigp.fans.model.chrom.SpiderInputClickNode;
@@ -30,29 +31,19 @@ public class ChromHandlerServiceImpl implements HandlerService {
     @Override
     public boolean login(User user) {
 
-        if(threadLocal.get()!=null){
+        /*if(threadLocal.get()!=null){
             logout();
-        }
+        }*/
 
         SpiderLoginEventNode node = initLoginEventNode(user);
         ChromDriverSpiderUtil.login(getWebDriver(), node);
 
         //确认是否已经登录成功
-        try {
-            String content = ChromDriverSpiderUtil.getContent(getWebDriver(), Common.SINA_LOGIN_ACK);
-            if(content!=null && content.contains("用户")){
-                return true;
-            }
-
-            LOGGER.error("login fail");
-            login(user);
-
-        }catch (Exception e){
-            LOGGER.error("login error", e);
+        if(!isLogin()){
             login(user);
         }
 
-        return false;
+        return true;
     }
 
     @Override
@@ -159,6 +150,93 @@ public class ChromHandlerServiceImpl implements HandlerService {
         ChromDriverSpiderUtil.click(getWebDriver(), Common.SINA_LOGOUT_TOP);
         ChromDriverSpiderUtil.click(getWebDriver(), Common.SINA_LOGOUT);
         return true;
+    }
+
+    @Override
+    public boolean isLogin() {
+
+        try {
+            String content = ChromDriverSpiderUtil.getContent(getWebDriver(), Common.SINA_LOGIN_ACK);
+            if(content!=null && content.contains("用户")){
+                return true;
+            }
+
+            LOGGER.error("login fail");
+        }catch (Exception e){
+            LOGGER.error("login error", e);
+        }
+        return false;
+    }
+
+    @Override
+    public String openUrlAndGetUser(FullGoal fullGoal) {
+
+        for(int i=0; i<10; i++) {
+            ChromDriverSpiderUtil.openUrl(getWebDriver(), fullGoal.getUrl());
+            String userName = ChromDriverSpiderUtil.getContent(getWebDriver(), Common.FULL_COMMENT_USERNAME);
+            if(StringUtils.isNotEmpty(userName)){
+                return userName;
+            }
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                LOGGER.error("login error", e);
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public boolean fullAttention() {
+
+        SpiderMatchClickNode node = new SpiderMatchClickNode();
+        node.setClickXPath(Common.FULL_COMMENT_ATTENTION);
+        node.setContentXPath(Common.FULL_COMMENT_ATTENTION);
+        node.setMatchContent("关注");
+        ChromDriverSpiderUtil.matchAndClick(getWebDriver(), node);
+        LOGGER.info("关注成功");
+        return true;
+    }
+
+    @Override
+    public boolean fullLogin(User user, boolean isClick) {
+
+        if(isClick) {
+            ChromDriverSpiderUtil.click(getWebDriver(), Common.FULL_COMMENT_ATTENTION);
+        }
+
+        SpiderLoginEventNode node = fullInitLoginEventNode(user);
+        ChromDriverSpiderUtil.login(getWebDriver(), node);
+
+        //确认是否已经登录成功
+        if(!isLogin()){
+            fullLogin(user, false);
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean fullLike() {
+
+        ChromDriverSpiderUtil.clickOrNot(getWebDriver(), "title", "赞", Common.Full_LIKE);
+        LOGGER.info("点赞成功");
+        return true;
+    }
+
+    private SpiderLoginEventNode fullInitLoginEventNode(User user) {
+
+        if(user==null){
+            throw new FansException("user is null");
+        }
+
+        SpiderLoginEventNode node = new SpiderLoginEventNode();
+        node.setLoginXPath(Common.Full_LOGIN_BUTTON);
+        node.setUserName(user.getUsername());
+        node.setUserNameXPath(Common.FULL_LOGIN_USERNAME);
+        node.setPasswd(user.getPwd());
+        node.setPasswdXPath(Common.FULL_LOGIN_PWD);
+        return node;
     }
 
     private SpiderLoginEventNode initLoginEventNode(User user) {

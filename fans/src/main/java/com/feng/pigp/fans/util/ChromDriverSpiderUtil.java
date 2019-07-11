@@ -29,7 +29,12 @@ public class ChromDriverSpiderUtil {
 
 
     public static void openUrl(WebDriver driver, String url){
-        driver.get(url);
+        try {
+            driver.get(url);
+            Thread.sleep(1000);
+        }catch (Exception e){
+            LOGGER.error("open url error", e);
+        }
     }
 
     /**
@@ -97,14 +102,15 @@ public class ChromDriverSpiderUtil {
             Thread.sleep(1000);
             LOGGER.info("start login, userName={}", eventNode.getUserName());
             //打开页面
-            driver.get(eventNode.getLoginURL());
-            Thread.sleep(2000);
+            if(StringUtils.isNotEmpty(eventNode.getLoginURL())) {
+                driver.get(eventNode.getLoginURL());
+                Thread.sleep(2000);
+            }
+
             //查找元素
             WebElement element = driver.findElement(By.xpath(eventNode.getUserNameXPath()));
-            element.clear();
             element.sendKeys(eventNode.getUserName());
             WebElement pwdElement = driver.findElement(By.xpath(eventNode.getPasswdXPath()));
-            pwdElement.clear();
             pwdElement.sendKeys(eventNode.getPasswd());
             Thread.sleep(100);
             click(driver, eventNode.getLoginXPath());
@@ -329,6 +335,18 @@ public class ChromDriverSpiderUtil {
         WebElement element = driver.findElement(By.xpath(xPath));
         List<WebElement> elementList = element.findElements(By.xpath(xPath+subPath));
         return elementList==null?0:elementList.size();
+    }
+
+    public static void matchAndClickWithOutIndex(WebDriver driver, SpiderMatchClickNode node) {
+
+        try {
+            String content = getContent(driver, node.getContentXPath());
+            if(StringUtils.isNotEmpty(content) && content.contains(node.getMatchContent())){
+                clickOrNot(driver, node.getClickKey(), node.getClickContent(),node.getClickXPath());
+            }
+        }catch (Exception e){
+            LOGGER.error("matchAndClick error", e);
+        }
     }
 
     public static int matchAndClick(WebDriver driver, SpiderMatchClickNode node) {

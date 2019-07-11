@@ -1,5 +1,6 @@
 package com.feng.pigp.fans.service;
 
+import com.feng.pigp.fans.model.FullGoal;
 import com.feng.pigp.fans.model.Goal;
 import com.feng.pigp.fans.model.User;
 import com.feng.pigp.fans.model.chrom.SpiderInputClickNode;
@@ -28,4 +29,14 @@ public interface HandlerService {
     boolean attention(Goal goal);
 
     boolean logout();
+
+    boolean isLogin();
+
+    String openUrlAndGetUser(FullGoal fullGoal);
+
+    boolean fullAttention();
+
+    boolean fullLogin(User user, boolean isClick);
+
+    boolean fullLike();
 }
