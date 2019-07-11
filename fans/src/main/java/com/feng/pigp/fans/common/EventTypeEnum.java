@@ -10,7 +10,8 @@ public enum EventTypeEnum {
     LIKE(1),   //点赞
     SHARE(2), //分享
     COMMENT(4), //评论
-    ATTENTION(8); //关注
+    ATTENTION(8), //关注
+    COLLECTION(16); //收藏
 
     private int id;
 

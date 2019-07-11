@@ -2,6 +2,8 @@ package com.feng.pigp.fans.util;
 
 import com.feng.pigp.fans.model.chrom.SpiderInputClickNode;
 import com.feng.pigp.fans.model.chrom.SpiderLoginEventNode;
+import com.feng.pigp.fans.model.chrom.SpiderMatchClickNode;
+import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -61,11 +63,19 @@ public class ChromDriverSpiderUtil {
         return driver;
     }
 
-    public static void inputAndClick(WebDriver webDriver, SpiderInputClickNode node) throws InterruptedException {
-        WebElement webElement = webDriver.findElement(By.xpath(node.getContentXPath()));
-        webElement.sendKeys(node.getContent());
-        Thread.sleep(1000);
-        ChromDriverSpiderUtil.click(webDriver, node.getClickXPath());
+    public static void inputAndClick(WebDriver webDriver, SpiderInputClickNode node){
+        for(int i=0; i<10; i++) {
+            try {
+                WebElement webElement = webDriver.findElement(By.xpath(node.getContentXPath()));
+                webElement.clear();
+                webElement.sendKeys(node.getContent());
+                Thread.sleep(1000);
+                ChromDriverSpiderUtil.click(webDriver, node.getClickXPath());
+                return;
+            } catch (Exception e) {
+                LOGGER.error("inputAndClick error", e);
+            }
+        }
     }
 
     /**
@@ -73,21 +83,25 @@ public class ChromDriverSpiderUtil {
      * @param driver
      * @param eventNode
      */
-    public static void login(WebDriver driver, SpiderLoginEventNode eventNode) throws InterruptedException {
+    public static void login(WebDriver driver, SpiderLoginEventNode eventNode){
 
-        LOGGER.info("start login, userName={}", eventNode.getUserName());
-        //打开页面
-        driver.get(eventNode.getLoginURL());
-        Thread.sleep(10000);
-        //查找元素
-        WebElement element = driver.findElement(By.xpath(eventNode.getUserNameXPath()));
-        element.sendKeys(eventNode.getUserName());
-        Thread.sleep(1000);
-        WebElement pwdElement = driver.findElement(By.xpath(eventNode.getPasswdXPath()));
-        pwdElement.sendKeys(eventNode.getPasswd());
-        Thread.sleep(1000);
-        click(driver, eventNode.getLoginXPath());
-        LOGGER.info("{} : login success");
+        try {
+            LOGGER.info("start login, userName={}", eventNode.getUserName());
+            //打开页面
+            driver.get(eventNode.getLoginURL());
+            Thread.sleep(10000);
+            //查找元素
+            WebElement element = driver.findElement(By.xpath(eventNode.getUserNameXPath()));
+            element.sendKeys(eventNode.getUserName());
+            Thread.sleep(1000);
+            WebElement pwdElement = driver.findElement(By.xpath(eventNode.getPasswdXPath()));
+            pwdElement.sendKeys(eventNode.getPasswd());
+            Thread.sleep(1000);
+            click(driver, eventNode.getLoginXPath());
+            LOGGER.info("{} : login success");
+        }catch (Exception e){
+            LOGGER.error("login error", e);
+        }
     }
 
     /**
@@ -270,5 +284,23 @@ public class ChromDriverSpiderUtil {
         WebElement element = driver.findElement(By.xpath(xPath));
         List<WebElement> elementList = element.findElements(By.xpath(xPath+subPath));
         return elementList==null?0:elementList.size();
+    }
+
+    public static int matchAndClick(WebDriver driver, SpiderMatchClickNode node) {
+
+        for(int i=node.getStratIndex(); i<=node.getEndIndex(); i++){
+
+            try {
+                String content = getContent(driver, String.format(node.getContentXPath(), i));
+                if(StringUtils.isNotEmpty(content) && content.contains(node.getMatchContent())){
+                    click(driver, String.format(node.getClickXPath(), i));
+                    return i;
+                }
+            }catch (Exception e){
+                LOGGER.error("matchAndClick error", e);
+            }
+        }
+
+        return -1;
     }
 }

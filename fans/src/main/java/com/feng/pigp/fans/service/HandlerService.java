@@ -17,5 +17,13 @@ public interface HandlerService {
 
     boolean enterUserIndex(String userId);
 
-    boolean like(Goal curGoal);
+    boolean like(Goal goal);
+
+    boolean share(Goal goal);
+
+    boolean comment(Goal goal);
+
+    boolean collection(Goal goal);
+
+    boolean attention(Goal goal);
 }

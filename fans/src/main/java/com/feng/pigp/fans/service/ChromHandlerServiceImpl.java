@@ -6,7 +6,9 @@ import com.feng.pigp.fans.model.Goal;
 import com.feng.pigp.fans.model.User;
 import com.feng.pigp.fans.model.chrom.SpiderInputClickNode;
 import com.feng.pigp.fans.model.chrom.SpiderLoginEventNode;
+import com.feng.pigp.fans.model.chrom.SpiderMatchClickNode;
 import com.feng.pigp.fans.util.ChromDriverSpiderUtil;
+import com.feng.pigp.util.GsonUtil;
 import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,11 +31,7 @@ public class ChromHandlerServiceImpl implements HandlerService {
 
         SpiderLoginEventNode node = initLoginEventNode(user);
         WebDriver webDriver = getWebDriver();
-        try {
-            ChromDriverSpiderUtil.login(webDriver, node);
-        } catch (InterruptedException e) {
-            LOGGER.error("login error", e);
-        }
+        ChromDriverSpiderUtil.login(webDriver, node);
         return true;
     }
 
@@ -44,28 +42,93 @@ public class ChromHandlerServiceImpl implements HandlerService {
         node.setClickXPath(Common.SINA_SEARCH_BUTTON);
         node.setContent(userId);
         node.setContentXPath(Common.SINA_SEARCH_INPUT);
-        try {
-            ChromDriverSpiderUtil.inputAndClick(getWebDriver(), node);
-        } catch (InterruptedException e) {
-            LOGGER.error("input and click error", e);
-        }
+        ChromDriverSpiderUtil.inputAndClick(getWebDriver(), node);
         return true;
     }
 
     @Override
     public boolean enterUserIndex(String userId) {
 
-        for(int i=1; i<=4; i++){
-            if(userId.equals(ChromDriverSpiderUtil.getContent(getWebDriver(), String.format(Common.SINA_RELATIVE_USER, i)))){
-                ChromDriverSpiderUtil.click(getWebDriver(), String.format(Common.SINA_RELATIVE_USER, i));
-            }
-        }
-
+        SpiderMatchClickNode node = new SpiderMatchClickNode();
+        node.setClickXPath(Common.SINA_RELATIVE_USER);
+        node.setContentXPath(Common.SINA_RELATIVE_USER);
+        node.setStratIndex(1);
+        node.setEndIndex(4);
+        node.setMatchContent(userId);
+        ChromDriverSpiderUtil.matchAndClick(getWebDriver(), node);
         return true;
     }
 
     @Override
-    public boolean like(Goal curGoal) {
+    public boolean like(Goal goal) {
+        SpiderMatchClickNode node = new SpiderMatchClickNode();
+        node.setClickXPath(Common.SINA_TOPIC_LIKE);
+        node.setContentXPath(Common.SINA_TOPIC_TITLE);
+        node.setStratIndex(2);
+        node.setEndIndex(12);
+        node.setMatchContent(goal.getMatchContent());
+        ChromDriverSpiderUtil.matchAndClick(getWebDriver(), node);
+        return true;
+    }
+
+    @Override
+    public boolean share(Goal goal) {
+
+        SpiderMatchClickNode node = new SpiderMatchClickNode();
+        node.setClickXPath(Common.SINA_TOPIC_SHARE);
+        node.setContentXPath(Common.SINA_TOPIC_TITLE);
+        node.setStratIndex(2);
+        node.setEndIndex(12);
+        node.setMatchContent(goal.getMatchContent());
+        ChromDriverSpiderUtil.matchAndClick(getWebDriver(), node);
+
+        SpiderInputClickNode inputClickNode = new SpiderInputClickNode();
+        inputClickNode.setContent("xxx");
+        inputClickNode.setContentXPath(Common.SINA_TOPIC_SHARE_INPUT);
+        inputClickNode.setClickXPath(Common.SINA_TOPIC_SHARE_BUTTON);
+        ChromDriverSpiderUtil.inputAndClick(getWebDriver(), inputClickNode);
+        return true;
+    }
+
+    @Override
+    public boolean comment(Goal goal) {
+
+        SpiderMatchClickNode node = new SpiderMatchClickNode();
+        node.setClickXPath(Common.SINA_TOPIC_COMMENT);
+        node.setContentXPath(Common.SINA_TOPIC_TITLE);
+        node.setStratIndex(2);
+        node.setEndIndex(12);
+        node.setMatchContent(goal.getMatchContent());
+        int index = ChromDriverSpiderUtil.matchAndClick(getWebDriver(), node);
+
+        if(index==-1){
+            LOGGER.error("not find topic : {}", GsonUtil.toJson(goal));
+            return false;
+        }
+
+        SpiderInputClickNode inputClickNode = new SpiderInputClickNode();
+        inputClickNode.setContent("xxx");
+        inputClickNode.setContentXPath(String.format(Common.SINA_TOPIC_COMMENT_INPUT, index));
+        inputClickNode.setClickXPath(String.format(Common.SINA_TOPIC_COMMENT_BUTTON, index));
+        ChromDriverSpiderUtil.inputAndClick(getWebDriver(), inputClickNode);
+        return true;
+    }
+
+    @Override
+    public boolean collection(Goal goal) {
+        SpiderMatchClickNode node = new SpiderMatchClickNode();
+        node.setClickXPath(Common.SINA_TOPIC_COLLECTION);
+        node.setContentXPath(Common.SINA_TOPIC_TITLE);
+        node.setStratIndex(2);
+        node.setEndIndex(12);
+        node.setMatchContent(goal.getMatchContent());
+        ChromDriverSpiderUtil.matchAndClick(getWebDriver(), node);
+        return true;
+    }
+
+    @Override
+    public boolean attention(Goal goal) {
+        ChromDriverSpiderUtil.click(getWebDriver(), Common.SINA_ATTENTION);
         return true;
     }
 
