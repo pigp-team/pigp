@@ -9,6 +9,7 @@ import com.feng.pigp.fans.model.chrom.SpiderLoginEventNode;
 import com.feng.pigp.fans.model.chrom.SpiderMatchClickNode;
 import com.feng.pigp.fans.util.ChromDriverSpiderUtil;
 import com.feng.pigp.util.GsonUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,15 +30,29 @@ public class ChromHandlerServiceImpl implements HandlerService {
     @Override
     public boolean login(User user) {
 
-        SpiderLoginEventNode node = initLoginEventNode(user);
         if(threadLocal.get()!=null){
-            threadLocal.get().quit();
+            logout();
         }
 
-        WebDriver webDriver = ChromDriverSpiderUtil.initDriver(0, 0);
-        threadLocal.set(webDriver);
-        ChromDriverSpiderUtil.login(webDriver, node);
-        return true;
+        SpiderLoginEventNode node = initLoginEventNode(user);
+        ChromDriverSpiderUtil.login(getWebDriver(), node);
+
+        //确认是否已经登录成功
+        try {
+            String content = ChromDriverSpiderUtil.getContent(getWebDriver(), Common.SINA_LOGIN_ACK);
+            if(content!=null && content.contains("用户")){
+                return true;
+            }
+
+            LOGGER.error("login fail");
+            login(user);
+
+        }catch (Exception e){
+            LOGGER.error("login error", e);
+            login(user);
+        }
+
+        return false;
     }
 
     @Override
@@ -136,6 +151,13 @@ public class ChromHandlerServiceImpl implements HandlerService {
     @Override
     public boolean attention(Goal goal) {
         ChromDriverSpiderUtil.click(getWebDriver(), Common.SINA_ATTENTION);
+        return true;
+    }
+
+    @Override
+    public boolean logout() {
+        ChromDriverSpiderUtil.click(getWebDriver(), Common.SINA_LOGOUT_TOP);
+        ChromDriverSpiderUtil.click(getWebDriver(), Common.SINA_LOGOUT);
         return true;
     }
 

@@ -9,7 +9,10 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -50,6 +53,11 @@ public class ChromDriverSpiderUtil {
         options.setCapability("takesScreenshot", true);
         //设置css支持
         options.setCapability("cssSelectorsEnabled", true);
+        Map<String, Object> prefs = new HashMap<String, Object>();
+
+        // 设置提醒的设置，2表示block
+        prefs.put("profile.default_content_setting_values.notifications", 2);
+        options.setExperimentalOption("prefs", prefs);
 
         //创建driver对象
         WebDriver driver = new ChromeDriver(options);
@@ -85,24 +93,25 @@ public class ChromDriverSpiderUtil {
      */
     public static void login(WebDriver driver, SpiderLoginEventNode eventNode){
 
-        for(int i=0; i<10; i++) {
-            try {
-                Thread.sleep(1000);
-                LOGGER.info("start login, userName={}", eventNode.getUserName());
-                //打开页面
-                driver.get(eventNode.getLoginURL());
-                Thread.sleep(5000);
-                //查找元素
-                WebElement element = driver.findElement(By.xpath(eventNode.getUserNameXPath()));
-                element.sendKeys(eventNode.getUserName());
-                WebElement pwdElement = driver.findElement(By.xpath(eventNode.getPasswdXPath()));
-                pwdElement.sendKeys(eventNode.getPasswd());
-                click(driver, eventNode.getLoginXPath());
-                LOGGER.info("{} : login success");
-                return;
-            } catch (Exception e) {
-                LOGGER.error("login error", e);
-            }
+        try {
+            Thread.sleep(1000);
+            LOGGER.info("start login, userName={}", eventNode.getUserName());
+            //打开页面
+            driver.get(eventNode.getLoginURL());
+            Thread.sleep(2000);
+            //查找元素
+            WebElement element = driver.findElement(By.xpath(eventNode.getUserNameXPath()));
+            element.clear();
+            element.sendKeys(eventNode.getUserName());
+            WebElement pwdElement = driver.findElement(By.xpath(eventNode.getPasswdXPath()));
+            pwdElement.clear();
+            pwdElement.sendKeys(eventNode.getPasswd());
+            Thread.sleep(100);
+            click(driver, eventNode.getLoginXPath());
+            LOGGER.info("{} : login success");
+            return;
+        } catch (Exception e) {
+            LOGGER.error("login error", e);
         }
     }
 
@@ -254,20 +263,18 @@ public class ChromDriverSpiderUtil {
 
     public static String getContent(WebDriver driver, String xPath) {
 
-        for(int i=0; i<10; i++) {
-            try {
-                Thread.sleep(1000);
-                WebElement element = driver.findElement(By.xpath(xPath));
-                boolean isDsiplayed = element.isDisplayed();
-                System.out.println("element is displayed : " + isDsiplayed);
-                if (isDsiplayed) {
-                    return element.getText();
-                }
-
-                return element.getAttribute("innerHTML");
-            } catch (Exception e) {
-                LOGGER.error("getContent error", e);
+        try {
+            Thread.sleep(1000);
+            WebElement element = driver.findElement(By.xpath(xPath));
+            boolean isDsiplayed = element.isDisplayed();
+            System.out.println("element is displayed : " + isDsiplayed);
+            if (isDsiplayed) {
+                return element.getText();
             }
+
+            return element.getAttribute("innerHTML");
+        } catch (Exception e) {
+            LOGGER.error("getContent error", e);
         }
 
         return null;

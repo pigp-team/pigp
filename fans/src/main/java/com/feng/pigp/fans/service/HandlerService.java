@@ -26,4 +26,6 @@ public interface HandlerService {
     boolean collection(Goal goal);
 
     boolean attention(Goal goal);
+
+    boolean logout();
 }
