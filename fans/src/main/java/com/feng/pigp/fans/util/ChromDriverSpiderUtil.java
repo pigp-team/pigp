@@ -62,14 +62,15 @@ public class ChromDriverSpiderUtil {
         //设置css支持
         options.setCapability("cssSelectorsEnabled", true);
 
-        ProxyIp ip = ProxyService.queryIp();
+        /*ProxyIp ip = ProxyService.queryIp();
         if(StringUtils.isNotEmpty(ip.getIp()) && ip.getPort()>0){
-            LOGGER.info("use proxy :{}-{}", ip.getIp(), ip.getPort());
+            LOGGER.info("use proxy :{}-{}", ip.getIp(), ip.getPort());*/
             Map<String, String> map = Maps.newHashMap();
-            map.put("httpProxy", ip.getIp()+":"+ip.getPort());
+            //map.put("httpProxy", ip.getIp()+":"+ip.getPort());
+            map.put("httpProxy", "58.218.200.223:30085");
             Proxy proxy = new Proxy(map);
             options.setProxy(proxy);
-        }
+        /*}*/
 
         Map<String, Object> prefs = new HashMap<String, Object>();
 

@@ -129,7 +129,7 @@ public class EventLoopService {
                     //2.打开连接
                     SpiderQueryContentNode queryNode = new SpiderQueryContentNode();
                     queryNode.setContentXPath(Common.FULL_COMMENT_USERNAME);
-                    String userName = handlerService.openUrlAndGetUser(goal, user, queryNode);
+                    String userName = handlerService.openUrlAndGetUser(goal, user, queryNode); //用户名可以修改为目标人物，轻松实现自评和他评
                     SpiderQueryContentNode queryTopicNode = new SpiderQueryContentNode();
                     queryTopicNode.setContentXPath(Common.SINA_TOPIC_MESSAGE);
                     String topic = handlerService.getCommentId(queryTopicNode);
@@ -188,7 +188,7 @@ public class EventLoopService {
                             continue;
                         }
 
-                        if (commentIdSet.contains(commentId)) {
+                        if (commentIdSet.contains(commentId)) {//这一句可以注释掉，不会受到消息id的限制
                             LOGGER.info("find comment :{}", commentId);
                             //开始处理评论
                             processedSet.add(commentId);
