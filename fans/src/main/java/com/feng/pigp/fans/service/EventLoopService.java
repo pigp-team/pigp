@@ -174,7 +174,7 @@ public class EventLoopService {
 
                     Set<String> processedSet = Sets.newHashSet();
                     int index = 1;
-                    while (processedSet.size() < commentIdSet.size()) {
+                    while (index < 1000) {
 
                         SpiderQueryContentNode commentIdNode = new SpiderQueryContentNode();
                         commentIdNode.setContentXPath(String.format(Common.COMMENT_TOTOLE_FLAG, index));
