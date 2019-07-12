@@ -217,7 +217,7 @@ public class EventLoopService {
                             //楼中楼 回复+点赞
                             //获取共有回复数
                             Set<String> hasProcessId = Sets.newHashSet();
-                            int subCommentCount = 1000;
+                            int subCommentCount = 10;
                             for (int i = 1; i <= subCommentCount; ) {
 
                                 SpiderQueryContentNode subCommentIdNode = new SpiderQueryContentNode();
@@ -227,9 +227,10 @@ public class EventLoopService {
 
                                 if (StringUtils.isEmpty(subCommentId)) {
                                     //查看更多是没有commentId的
-                                    SpiderQueryContentNode subMoreNode = new SpiderQueryContentNode();
+                                    /*SpiderQueryContentNode subMoreNode = new SpiderQueryContentNode();
                                     subMoreNode.setContentXPath(String.format(Common.COMMENT_SUB_MORE, index, i));
-                                    handlerService.click(subMoreNode);
+                                    handlerService.click(subMoreNode);*/
+                                    break; //不展开
 
                                 }
 
