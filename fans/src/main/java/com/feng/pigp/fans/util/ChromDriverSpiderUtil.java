@@ -1,8 +1,10 @@
 package com.feng.pigp.fans.util;
 
+import com.feng.pigp.fans.model.ProxyIp;
 import com.feng.pigp.fans.model.chrom.SpiderInputClickNode;
 import com.feng.pigp.fans.model.chrom.SpiderLoginEventNode;
 import com.feng.pigp.fans.model.chrom.SpiderMatchClickNode;
+import com.feng.pigp.fans.service.ProxyService;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.*;
@@ -59,15 +61,21 @@ public class ChromDriverSpiderUtil {
         options.setCapability("takesScreenshot", true);
         //设置css支持
         options.setCapability("cssSelectorsEnabled", true);
-        Map<String, String> map = Maps.newHashMap();
-        map.put("httpProxy", "218.60.8.99:3129");
-        Proxy proxy = new Proxy(map);
-        options.setProxy(proxy);
+
+        ProxyIp ip = ProxyService.queryIp();
+        if(StringUtils.isNotEmpty(ip.getIp()) && ip.getPort()>0){
+            LOGGER.info("use proxy :{}-{}", ip.getIp(), ip.getPort());
+            Map<String, String> map = Maps.newHashMap();
+            map.put("httpProxy", ip.getIp()+":"+ip.getPort());
+            Proxy proxy = new Proxy(map);
+            options.setProxy(proxy);
+        }
 
         Map<String, Object> prefs = new HashMap<String, Object>();
 
         // 设置提醒的设置，2表示block
         prefs.put("profile.default_content_setting_values.notifications", 2);
+        prefs.put("profile.default_content_settings.cookies", 2);
         options.setExperimentalOption("prefs", prefs);
 
         //创建driver对象
@@ -108,7 +116,7 @@ public class ChromDriverSpiderUtil {
             //打开页面
             if(StringUtils.isNotEmpty(eventNode.getLoginURL())) {
                 driver.get(eventNode.getLoginURL());
-                Thread.sleep(10000);
+                Thread.sleep(2000);
             }
 
             //查找元素

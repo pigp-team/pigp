@@ -47,4 +47,6 @@ public interface HandlerService<T> {
     void click(T object);
 
     void clickWithScollBottom(T object);
+
+    void close();
 }

@@ -19,7 +19,6 @@ import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 
 /**
@@ -218,7 +217,7 @@ public class EventLoopService {
                             //楼中楼 回复+点赞
                             //获取共有回复数
                             Set<String> hasProcessId = Sets.newHashSet();
-                            int subCommentCount = 0;
+                            int subCommentCount = 1000;
                             for (int i = 1; i <= subCommentCount; ) {
 
                                 SpiderQueryContentNode subCommentIdNode = new SpiderQueryContentNode();
@@ -281,5 +280,7 @@ public class EventLoopService {
                 LOGGER.error("run is error", e);
             }
         }
+
+        handlerService.close();
     }
 }

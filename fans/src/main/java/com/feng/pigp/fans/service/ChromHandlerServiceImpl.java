@@ -24,6 +24,7 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ChromHandlerServiceImpl.class);
 
+    private static final int MAX_RETRY = 5;
     private ThreadLocal<WebDriver> threadLocal = new ThreadLocal<WebDriver>();
 
     @Override
@@ -34,19 +35,23 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
             logout(user);
         }
 
-        loginWithOutLogout(user);
+        loginWithOutLogout(user, 1);
         LOGGER.info("handler service login success {}", user.getUsername());
         return true;
     }
 
-    private void loginWithOutLogout(User user) {
+    private void loginWithOutLogout(User user, int retryNum) {
 
+        if(retryNum>=MAX_RETRY){
+            close();
+            loginWithOutLogout(user, 1);
+        }
         SpiderLoginEventNode node = initLoginEventNode(user);
         ChromDriverSpiderUtil.login(getWebDriver(), node);
 
         //确认是否已经登录成功
         if(!isLogin()){
-            loginWithOutLogout(user);
+            loginWithOutLogout(user, ++retryNum);
         }
     }
 
@@ -257,6 +262,15 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
         ChromDriverSpiderUtil.scrollToBottom(getWebDriver());
         SpiderQueryContentNode node = (SpiderQueryContentNode)object;
         ChromDriverSpiderUtil.click(getWebDriver(), node.getContentXPath());
+    }
+
+    @Override
+    public void close() {
+        if(threadLocal.get()==null){
+            return;
+        }
+        threadLocal.get().quit();
+        threadLocal.remove();
     }
 
     private SpiderLoginEventNode fullInitLoginEventNode(User user) {
