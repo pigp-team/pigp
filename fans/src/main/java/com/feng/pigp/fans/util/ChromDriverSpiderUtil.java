@@ -79,7 +79,6 @@ public class ChromDriverSpiderUtil {
     public static boolean inputAndClick(WebDriver webDriver, SpiderInputClickNode node){
         try {
             WebElement webElement = webDriver.findElement(By.xpath(node.getContentXPath()));
-            webElement.clear();
             webElement.sendKeys(node.getContent());
             Thread.sleep(500);
             ChromDriverSpiderUtil.click(webDriver, node.getClickXPath());
@@ -242,7 +241,7 @@ public class ChromDriverSpiderUtil {
                 }
             }
 
-            if (StringUtils.isNotEmpty(content)) {
+            if (StringUtils.isEmpty(key) && StringUtils.isNotEmpty(content)) {
                 String value = clickElement.getText();
                 if (!content.equals(value)) {
                     LOGGER.info("no match no click {}-{}", content, value);
