@@ -151,6 +151,11 @@ public class ChromDriverSpiderUtil {
         return count;
     }
 
+    public static void scrollToBottom(WebDriver driver){
+        JavascriptExecutor js = (JavascriptExecutor)driver;
+        js.executeScript("document.documentElement.scrollTop=100000");
+    }
+
     /**
      * 自动翻页查找需要找的主题
      * 该查找为精确查找
@@ -202,19 +207,23 @@ public class ChromDriverSpiderUtil {
      */
     public static void click(WebDriver driver, String xPath){
 
-        WebElement clickElement = driver.findElement(By.xpath(xPath));
-        boolean isDisplay = clickElement.isDisplayed();
-        if(!isDisplay){
-            //滚动
-            JavascriptExecutor js = (JavascriptExecutor)driver;
-            js.executeScript("arguments[0].scrollIntoView()", clickElement);
-        }
-        clickElement.click();
-        //休眠2s等待页面加载
         try {
-            Thread.sleep(LOADING_WAITING_TIME);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            WebElement clickElement = driver.findElement(By.xpath(xPath));
+            boolean isDisplay = clickElement.isDisplayed();
+            if (!isDisplay) {
+                //滚动
+                JavascriptExecutor js = (JavascriptExecutor) driver;
+                js.executeScript("arguments[0].scrollIntoView()", clickElement);
+            }
+            clickElement.click();
+            //休眠2s等待页面加载
+            try {
+                Thread.sleep(LOADING_WAITING_TIME);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }catch (Exception e){
+            LOGGER.error("click error", e);
         }
     }
 
@@ -353,7 +362,6 @@ public class ChromDriverSpiderUtil {
 
         JavascriptExecutor js = (JavascriptExecutor)driver;
         Object result = js.executeScript("return document.documentElement.scrollHeight");
-        System.out.println(result);
         return (long)result;
     }
 

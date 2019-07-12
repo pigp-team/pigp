@@ -27,14 +27,6 @@ public class UserPoolService {
     public static AtomicInteger index = new AtomicInteger(0);
     public List<User> userList = Lists.newArrayList();
 
-    @PostConstruct
-    public void init(){
-        User user = new User();
-        user.setUsername("16619881518");
-        user.setPwd("xuxinfeng");
-        userList.add(user);
-    }
-
     public User getUser(){
 
         if(index.get()<userList.size()) {
@@ -42,5 +34,9 @@ public class UserPoolService {
         }
 
         return null;
+    }
+
+    public void addUser(User user){
+        userList.add(user);
     }
 }

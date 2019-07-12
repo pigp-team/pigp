@@ -1,6 +1,7 @@
 package com.feng.pigp.fans.service;
 
 import com.feng.pigp.fans.model.Goal;
+import com.feng.pigp.fans.model.MultiGoal;
 import com.feng.pigp.fans.model.SingletonGoal;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -24,6 +25,8 @@ public class GoalPoolService {
     private Map<String, Goal> user2Goal = Maps.newHashMap();
     private List<Goal> goalList = Lists.newArrayList();
 
+    private List<MultiGoal> multiGoals = Lists.newArrayList();
+
     //可以提交任务
     public synchronized boolean submitGoalTask(Goal goal){
 
@@ -40,5 +43,14 @@ public class GoalPoolService {
 
     public synchronized List<SingletonGoal> getAllGaols() {
         return Lists.newArrayList();
+    }
+
+    public void submitMulti(MultiGoal goal){
+
+        multiGoals.add(goal);
+    }
+
+    public List<MultiGoal> getMulti(){
+        return multiGoals;
     }
 }

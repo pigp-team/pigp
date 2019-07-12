@@ -45,9 +45,9 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
         ChromDriverSpiderUtil.login(getWebDriver(), node);
 
         //确认是否已经登录成功
-        if(!isLogin()){
+        /*if(!isLogin()){
             loginWithOutLogout(user);
-        }
+        }*/
     }
 
     @Override
@@ -248,6 +248,13 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
 
     @Override
     public void click(Node object) {
+        SpiderQueryContentNode node = (SpiderQueryContentNode)object;
+        ChromDriverSpiderUtil.click(getWebDriver(), node.getContentXPath());
+    }
+
+    @Override
+    public void clickWithScollBottom(Node object) {
+        ChromDriverSpiderUtil.scrollToBottom(getWebDriver());
         SpiderQueryContentNode node = (SpiderQueryContentNode)object;
         ChromDriverSpiderUtil.click(getWebDriver(), node.getContentXPath());
     }

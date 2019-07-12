@@ -45,4 +45,6 @@ public interface HandlerService<T> {
     String getCommentId(T object);
 
     void click(T object);
+
+    void clickWithScollBottom(T object);
 }

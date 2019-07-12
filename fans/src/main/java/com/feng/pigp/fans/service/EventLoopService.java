@@ -111,10 +111,6 @@ public class EventLoopService {
 
     public void multiRun(){
 
-        MultiGoal goal = new MultiGoal();
-        Set<String> commentIdSet = Sets.newHashSet("4391057288197078","4391066558402566");
-        goal.setUrl("https://weibo.com/6117570574/HCcOckFXY?from=page_1005056117570574_profile&wvr=6&mod=weibotime");
-
         for(;;) {
             try {
                 //1. 获取用户
@@ -127,154 +123,159 @@ public class EventLoopService {
                 //登录
                 handlerService.login(user);
 
-                //2.打开连接
-                SpiderQueryContentNode queryNode = new SpiderQueryContentNode();
-                queryNode.setContentXPath(Common.FULL_COMMENT_USERNAME);
-                String userName = handlerService.openUrlAndGetUser(goal, user, queryNode);
-                SpiderQueryContentNode queryTopicNode = new SpiderQueryContentNode();
-                queryTopicNode.setContentXPath(Common.SINA_TOPIC_MESSAGE);
-                String topic = handlerService.getCommentId(queryTopicNode);
-                if (StringUtils.isEmpty(userName)) {
-                    LOGGER.error("open goal url fail {}-{}", GsonUtil.toJson(goal), user.getUsername());
-                    continue;
-                }
+                List<MultiGoal> goalList = goalPoolService.getMulti();
+                for(MultiGoal goal : goalList) {
 
-                //更新目标用户的信息
-                goal.setUserName(userName);
-
-                /*//关注
-                SpiderQueryContentNode attentionNode = new SpiderQueryContentNode();
-                attentionNode.setContentXPath(Common.FULL_COMMENT_ATTENTION);
-                handlerService.attention(goal, user, attentionNode);
-
-                //点赞
-                SpiderQueryContentNode messageLikeNode = new SpiderQueryContentNode();
-                messageLikeNode.setContentXPath(Common.Full_LIKE);
-                handlerService.like(goal, user, messageLikeNode);
-
-                //转发
-                SpiderInputClickNode messageShareNode = new SpiderInputClickNode();
-                messageShareNode.setTriggerXPath(Common.MESSAGE_SHARE_FLAG);
-                messageShareNode.setClickXPath(Common.MESSAGE_SHARE_SUBMIT);
-                messageShareNode.setContentXPath(Common.MESSAGE_SHARE_INPUT);
-                messageShareNode.setContent(commentPoolService.queryCommentWithShare(goal, topic));
-                handlerService.share(goal, user, messageShareNode);
-
-                //评论
-                SpiderInputClickNode messageCommentNode = new SpiderInputClickNode();
-                messageCommentNode.setTriggerXPath(Common.MESSAGE_COMMENT_FLAG);
-                messageCommentNode.setClickXPath(Common.MESSAAGE_COMMENT_SUBMIT);
-                messageCommentNode.setContentXPath(Common.MESSAGE_COMMENT_INFPUT);
-                messageCommentNode.setContent(commentPoolService.queryCommentWithComment(goal, topic));
-                handlerService.comment(goal, user, messageCommentNode);
-
-                //处理评论相关
-                if(CollectionUtils.isEmpty(commentIdSet)){
-                    continue;
-                }*/
-
-                Set<String> processedSet = Sets.newHashSet();
-                int index = 1;
-                while(processedSet.size()<commentIdSet.size()) {
-
-                    SpiderQueryContentNode commentIdNode = new SpiderQueryContentNode();
-                    commentIdNode.setContentXPath(String.format(Common.COMMENT_TOTOLE_FLAG, index));
-                    commentIdNode.setKey("comment_id");
-                    String commentId = handlerService.getCommentId(commentIdNode);
-                    if(StringUtils.isEmpty(commentId)){
-                        //还是没有找到，加载更多
-                        SpiderQueryContentNode moreNode = new SpiderQueryContentNode();
-                        moreNode.setContentXPath(Common.COMMENT_TOTAL_MORE);
-                        handlerService.click(moreNode);
+                    Set<String> commentIdSet = goal.getCommonIdList();
+                    //2.打开连接
+                    SpiderQueryContentNode queryNode = new SpiderQueryContentNode();
+                    queryNode.setContentXPath(Common.FULL_COMMENT_USERNAME);
+                    String userName = handlerService.openUrlAndGetUser(goal, user, queryNode);
+                    SpiderQueryContentNode queryTopicNode = new SpiderQueryContentNode();
+                    queryTopicNode.setContentXPath(Common.SINA_TOPIC_MESSAGE);
+                    String topic = handlerService.getCommentId(queryTopicNode);
+                    if (StringUtils.isEmpty(userName)) {
+                        LOGGER.error("open goal url fail {}-{}", GsonUtil.toJson(goal), user.getUsername());
                         continue;
                     }
 
-                    if (commentIdSet.contains(commentId)) {
-                        LOGGER.info("find comment :{}", commentId);
-                        //开始处理评论
-                        processedSet.add(commentId);
-                        //处理该条评论
-                        //1. 获取首楼，判断是否自评
-                        SpiderQueryContentNode commentNode = new SpiderQueryContentNode();
-                        commentNode.setContentXPath(String.format(Common.COMMENT_FIRST_USERNAME, index));
-                        String firstUserName = handlerService.getCommentId(commentNode);
-                        if(userName.equals(firstUserName)){
-                            LOGGER.info("self comment {}-{}", user.getUsername(), goal.getUserName());
-                            //自评， 回复+点赞
-                            //先不管时间
-                           /* SpiderQueryContentNode firstCommentNode = new SpiderQueryContentNode();
-                            firstCommentNode.setContentXPath(String.format(Common.COMMENT_FIRST_LIKE, index));
-                            handlerService.like(goal, user, firstCommentNode);
-                            //回复
-                            SpiderInputClickNode firstCommentReplayNode = new SpiderInputClickNode();
-                            firstCommentReplayNode.setTriggerXPath(String.format(Common.COMMENT_FIRST_COMMENT, index));
-                            firstCommentReplayNode.setClickXPath(String.format(Common.COMMENT_FIRST_COMMENT_SUBMIT, index));
-                            firstCommentReplayNode.setContentXPath(String.format(Common.COMMENT_FIRST_COMMENT_INPUT, index));
-                            firstCommentReplayNode.setContent(commentPoolService.queryCommentWithInternalComment(goal, topic));
-                            handlerService.comment(goal, user, firstCommentReplayNode);*/
-                        }
+                    //更新目标用户的信息
+                    goal.setUserName(userName);
 
-                        //楼中楼 回复+点赞
-                        //获取共有回复数
-                        Set<String> hasProcessId = Sets.newHashSet();
-                        int subCommentCount = 0;
-                        for(int i=1; i<=subCommentCount; ){
+                    //关注
+                    SpiderQueryContentNode attentionNode = new SpiderQueryContentNode();
+                    attentionNode.setContentXPath(Common.FULL_COMMENT_ATTENTION);
+                    handlerService.attention(goal, user, attentionNode);
 
-                            SpiderQueryContentNode subCommentIdNode = new SpiderQueryContentNode();
-                            subCommentIdNode.setContentXPath(String.format(Common.COMMENT_SUB_TOTOLE_FLAG, index, i));
-                            subCommentIdNode.setKey("comment_id");
-                            String subCommentId = handlerService.getCommentId(subCommentIdNode);
+                    //点赞
+                    SpiderQueryContentNode messageLikeNode = new SpiderQueryContentNode();
+                    messageLikeNode.setContentXPath(Common.Full_LIKE);
+                    handlerService.like(goal, user, messageLikeNode);
 
-                            if(StringUtils.isEmpty(subCommentId)){
-                                //查看更多是没有commentId的
-                                SpiderQueryContentNode subMoreNode = new SpiderQueryContentNode();
-                                subMoreNode.setContentXPath(String.format(Common.COMMENT_SUB_MORE, index, i));
-                                handlerService.click(subMoreNode);
+                    //转发
+                    SpiderInputClickNode messageShareNode = new SpiderInputClickNode();
+                    messageShareNode.setTriggerXPath(Common.MESSAGE_SHARE_FLAG);
+                    messageShareNode.setClickXPath(Common.MESSAGE_SHARE_SUBMIT);
+                    messageShareNode.setContentXPath(Common.MESSAGE_SHARE_INPUT);
+                    messageShareNode.setContent(commentPoolService.queryCommentWithShare(goal, topic));
+                    handlerService.share(goal, user, messageShareNode);
 
-                            }
+                    //评论
+                    SpiderInputClickNode messageCommentNode = new SpiderInputClickNode();
+                    messageCommentNode.setTriggerXPath(Common.MESSAGE_COMMENT_FLAG);
+                    messageCommentNode.setClickXPath(Common.MESSAAGE_COMMENT_SUBMIT);
+                    messageCommentNode.setContentXPath(Common.MESSAGE_COMMENT_INFPUT);
+                    messageCommentNode.setContent(commentPoolService.queryCommentWithComment(goal, topic));
+                    handlerService.comment(goal, user, messageCommentNode);
 
-                            if(hasProcessId.contains(subCommentId)){
-                                i++;
-                                continue;
-                            }
-
-                            //1. 获取子评论姓名
-                            SpiderQueryContentNode subCommentNode = new SpiderQueryContentNode();
-                            subCommentNode.setContentXPath(String.format(Common.COMMENT_SUB_USERNAME, index, i));
-                            String subUserName = handlerService.getCommentId(subCommentNode);
-
-                            if(StringUtils.isEmpty(subUserName)){
-                                i++;
-                                continue;
-                            }
-
-                            if(!subUserName.equals(userName)){
-                                i++;
-                                continue;
-                            }
-
-                            //2.  自评 + 点赞
-                            LOGGER.info("ABA comment {}-{}", user.getUsername(), goal.getUserName());
-                            //自评， 回复+点赞
-                            //先不管时间
-                            SpiderQueryContentNode subLikeNode = new SpiderQueryContentNode();
-                            subLikeNode.setContentXPath(String.format(Common.COMMENT_SUB_LIKE, index, i));
-                            handlerService.like(goal, user, subLikeNode);
-                            //回复
-                            SpiderInputClickNode subCommentReplayNode = new SpiderInputClickNode();
-                            subCommentReplayNode.setTriggerXPath(String.format(Common.COMMENT_SUB_COMMENT, index, i));
-                            subCommentReplayNode.setClickXPath(String.format(Common.COMMENT_SUB_COMMENT_SUBMIT, index, i));
-                            subCommentReplayNode.setContentXPath(String.format(Common.COMMENT_SUB_COMMENT_INPUT, index, i));
-                            subCommentReplayNode.setContent(commentPoolService.queryCommentWithInternalComment(goal, topic));
-                            handlerService.comment(goal, user, subCommentReplayNode);
-                            hasProcessId.add(subCommentId);
-                            i++;
-                        }
+                    //处理评论相关
+                    if (CollectionUtils.isEmpty(commentIdSet)) {
+                        continue;
                     }
-                    index++;
 
-                    LOGGER.info("find comment not match : {}", commentId);
+                    Set<String> processedSet = Sets.newHashSet();
+                    int index = 1;
+                    while (processedSet.size() < commentIdSet.size()) {
+
+                        SpiderQueryContentNode commentIdNode = new SpiderQueryContentNode();
+                        commentIdNode.setContentXPath(String.format(Common.COMMENT_TOTOLE_FLAG, index));
+                        commentIdNode.setKey("comment_id");
+                        String commentId = handlerService.getCommentId(commentIdNode);
+                        if (StringUtils.isEmpty(commentId)) {
+                            //还是没有找到，加载更多
+                            SpiderQueryContentNode moreNode = new SpiderQueryContentNode();
+                            moreNode.setContentXPath(Common.COMMENT_TOTAL_MORE);
+                            handlerService.clickWithScollBottom(moreNode);
+                            continue;
+                        }
+
+                        if (commentIdSet.contains(commentId)) {
+                            LOGGER.info("find comment :{}", commentId);
+                            //开始处理评论
+                            processedSet.add(commentId);
+                            //处理该条评论
+                            //1. 获取首楼，判断是否自评
+                            SpiderQueryContentNode commentNode = new SpiderQueryContentNode();
+                            commentNode.setContentXPath(String.format(Common.COMMENT_FIRST_USERNAME, index));
+                            String firstUserName = handlerService.getCommentId(commentNode);
+                            if (userName.equals(firstUserName)) {
+                                LOGGER.info("self comment {}-{}", user.getUsername(), goal.getUserName());
+                                //自评， 回复+点赞
+                                //先不管时间
+                                SpiderQueryContentNode firstCommentNode = new SpiderQueryContentNode();
+                                firstCommentNode.setContentXPath(String.format(Common.COMMENT_FIRST_LIKE, index));
+                                handlerService.like(goal, user, firstCommentNode);
+                                //回复
+                                SpiderInputClickNode firstCommentReplayNode = new SpiderInputClickNode();
+                                firstCommentReplayNode.setTriggerXPath(String.format(Common.COMMENT_FIRST_COMMENT, index));
+                                firstCommentReplayNode.setClickXPath(String.format(Common.COMMENT_FIRST_COMMENT_SUBMIT, index));
+                                firstCommentReplayNode.setContentXPath(String.format(Common.COMMENT_FIRST_COMMENT_INPUT, index));
+                                firstCommentReplayNode.setContent(commentPoolService.queryCommentWithInternalComment(goal, topic));
+                                handlerService.comment(goal, user, firstCommentReplayNode);
+                            }
+
+                            //楼中楼 回复+点赞
+                            //获取共有回复数
+                            Set<String> hasProcessId = Sets.newHashSet();
+                            int subCommentCount = 0;
+                            for (int i = 1; i <= subCommentCount; ) {
+
+                                SpiderQueryContentNode subCommentIdNode = new SpiderQueryContentNode();
+                                subCommentIdNode.setContentXPath(String.format(Common.COMMENT_SUB_TOTOLE_FLAG, index, i));
+                                subCommentIdNode.setKey("comment_id");
+                                String subCommentId = handlerService.getCommentId(subCommentIdNode);
+
+                                if (StringUtils.isEmpty(subCommentId)) {
+                                    //查看更多是没有commentId的
+                                    SpiderQueryContentNode subMoreNode = new SpiderQueryContentNode();
+                                    subMoreNode.setContentXPath(String.format(Common.COMMENT_SUB_MORE, index, i));
+                                    handlerService.click(subMoreNode);
+
+                                }
+
+                                if (hasProcessId.contains(subCommentId)) {
+                                    i++;
+                                    continue;
+                                }
+
+                                //1. 获取子评论姓名
+                                SpiderQueryContentNode subCommentNode = new SpiderQueryContentNode();
+                                subCommentNode.setContentXPath(String.format(Common.COMMENT_SUB_USERNAME, index, i));
+                                String subUserName = handlerService.getCommentId(subCommentNode);
+
+                                if (StringUtils.isEmpty(subUserName)) {
+                                    i++;
+                                    continue;
+                                }
+
+                                if (!subUserName.equals(userName)) {
+                                    i++;
+                                    continue;
+                                }
+
+                                //2.  自评 + 点赞
+                                LOGGER.info("ABA comment {}-{}", user.getUsername(), goal.getUserName());
+                                //自评， 回复+点赞
+                                //先不管时间
+                                SpiderQueryContentNode subLikeNode = new SpiderQueryContentNode();
+                                subLikeNode.setContentXPath(String.format(Common.COMMENT_SUB_LIKE, index, i));
+                                handlerService.like(goal, user, subLikeNode);
+                                //回复
+                                SpiderInputClickNode subCommentReplayNode = new SpiderInputClickNode();
+                                subCommentReplayNode.setTriggerXPath(String.format(Common.COMMENT_SUB_COMMENT, index, i));
+                                subCommentReplayNode.setClickXPath(String.format(Common.COMMENT_SUB_COMMENT_SUBMIT, index, i));
+                                subCommentReplayNode.setContentXPath(String.format(Common.COMMENT_SUB_COMMENT_INPUT, index, i));
+                                subCommentReplayNode.setContent(commentPoolService.queryCommentWithInternalComment(goal, topic));
+                                handlerService.comment(goal, user, subCommentReplayNode);
+                                hasProcessId.add(subCommentId);
+                                i++;
+                            }
+                        }
+                        index++;
+                        LOGGER.info("find comment not match : {}", commentId);
+                    }
                 }
+
             }catch (Throwable e){
                 LOGGER.error("run is error", e);
             }
