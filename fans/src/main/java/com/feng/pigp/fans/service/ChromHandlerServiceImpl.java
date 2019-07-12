@@ -45,9 +45,9 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
         ChromDriverSpiderUtil.login(getWebDriver(), node);
 
         //确认是否已经登录成功
-        /*if(!isLogin()){
+        if(!isLogin()){
             loginWithOutLogout(user);
-        }*/
+        }
     }
 
     @Override
@@ -139,7 +139,7 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
     public boolean attention(Goal goal, User user, Node node) {
 
         SpiderQueryContentNode queryNode = (SpiderQueryContentNode)node;
-        boolean success = ChromDriverSpiderUtil.clickOrNot(getWebDriver(), null, "关注", ((SpiderQueryContentNode) node).getContentXPath());
+        boolean success = ChromDriverSpiderUtil.click(getWebDriver(), queryNode.getContentXPath());
         if(success) {
             goal.getMessageMetric().getAttentionCount().increment();
             LOGGER.info("handler service attention success {}-{}-{}", user.getUsername(), goal.getUserName(), goal.getId());
@@ -162,7 +162,7 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
 
         try {
             String content = ChromDriverSpiderUtil.getContent(getWebDriver(), Common.SINA_LOGIN_ACK);
-            if(content!=null && content.contains("用户")){
+            if(StringUtils.isNotEmpty(content)){
                 return true;
             }
 

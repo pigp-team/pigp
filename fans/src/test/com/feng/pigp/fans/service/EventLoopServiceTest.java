@@ -76,30 +76,21 @@ public class EventLoopServiceTest {
         goalPoolService.submitMulti(goal6);
 
         User user1 = new User();
-        user1.setUsername("ixxztuadncgiyh-per@yahoo.com");
-        user1.setPwd("Kgnqksdmq3");
+        user1.setUsername("13430224639");
+        user1.setPwd("cxlcrt3566m");
 
         User user2 = new User();
-        user2.setUsername("etvfgojhpdklu-upl@yahoo.com");
-        user2.setPwd("Ffzlkaagp2");
+        user2.setUsername("18320062420");
+        user2.setPwd("lgtidp2358b");
 
         User user3 = new User();
-        user3.setUsername("ndmljycpjwdxon-cj16324@yahoo.com");
-        user3.setPwd("EAqdrmqqdnd81");
+        user3.setUsername("15516210924");
+        user3.setPwd("kpwcms8038b");
 
-        User user4 = new User();
-        user4.setUsername("iqullyfirrcqun-mmur9@yahoo.com");
-        user4.setPwd("Hajldlzlc3");
-
-        User user5 = new User();
-        user5.setUsername("ecjhkhjspksvmy-bwhg@yahoo.com");
-        user5.setPwd("Dzjyyhdwc4");
 
         userPoolService.addUser(user1);
         userPoolService.addUser(user2);
         userPoolService.addUser(user3);
-        userPoolService.addUser(user4);
-        userPoolService.addUser(user5);
 
         eventLoopService.multiRun();
     }

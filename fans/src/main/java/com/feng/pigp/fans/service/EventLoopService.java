@@ -201,6 +201,7 @@ public class EventLoopService {
                             if (userName.equals(firstUserName)) {
                                 LOGGER.info("self comment {}-{}", user.getUsername(), goal.getUserName());
                                 //自评， 回复+点赞
+
                                 //先不管时间
                                 SpiderQueryContentNode firstCommentNode = new SpiderQueryContentNode();
                                 firstCommentNode.setContentXPath(String.format(Common.COMMENT_FIRST_LIKE, index));

@@ -54,7 +54,7 @@ public class Common {
     public static String COMMENT_FIRST_USERNAME = "//*[@id=\"Pl_Official_WeiboDetail__73\"]/div/div/div/div[4]/div/div[3]/div[2]/div/div/div[%s]/div[2]/div[1]/a[1]";
     public static String COMMENT_FIRST_TIME = "//*[@id=\"Pl_Official_WeiboDetail__73\"]/div/div/div/div[4]/div/div[3]/div[2]/div/div/div[1]/div[2]/div[3]/div[2]";
     public static String COMMENT_FIRST_COMMENT = "//*[@id=\"Pl_Official_WeiboDetail__73\"]/div/div/div/div[4]/div/div[3]/div[2]/div/div/div[%s]/div[2]/div[3]/div[1]/ul/li[3]/span[1]/a";
-    public static String COMMENT_FIRST_LIKE = "//*[@id=\"Pl_Official_WeiboDetail__73\"]/div/div/div/div[4]/div/div[3]/div[2]/div/div/div[1]/div[2]/div[3]/div[1]/ul/li[4]/span/a";
+    public static String COMMENT_FIRST_LIKE = "//*[@id=\"Pl_Official_WeiboDetail__73\"]/div/div/div/div[4]/div/div[3]/div[2]/div/div/div[%s]/div[2]/div[3]/div[1]/ul/li[4]/span/a";
 
     public static String COMMENT_SUB_TOTOLE_FLAG = "//*[@id=\"Pl_Official_WeiboDetail__73\"]/div/div/div/div[4]/div/div[3]/div[2]/div/div/div[%s]/div[2]/div[4]/div/div[%s]";
     public static String COMMENT_SUB_USERNAME = "//*[@id=\"Pl_Official_WeiboDetail__73\"]/div/div/div/div[4]/div/div[3]/div[2]/div/div/div[%s]/div[2]/div[4]/div/div[%s]/div/div[1]/a[1]";

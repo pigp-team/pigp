@@ -3,6 +3,7 @@ package com.feng.pigp.fans.util;
 import com.feng.pigp.fans.model.chrom.SpiderInputClickNode;
 import com.feng.pigp.fans.model.chrom.SpiderLoginEventNode;
 import com.feng.pigp.fans.model.chrom.SpiderMatchClickNode;
+import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -58,6 +59,11 @@ public class ChromDriverSpiderUtil {
         options.setCapability("takesScreenshot", true);
         //设置css支持
         options.setCapability("cssSelectorsEnabled", true);
+        Map<String, String> map = Maps.newHashMap();
+        map.put("httpProxy", "218.60.8.99:3129");
+        Proxy proxy = new Proxy(map);
+        options.setProxy(proxy);
+
         Map<String, Object> prefs = new HashMap<String, Object>();
 
         // 设置提醒的设置，2表示block
@@ -102,7 +108,7 @@ public class ChromDriverSpiderUtil {
             //打开页面
             if(StringUtils.isNotEmpty(eventNode.getLoginURL())) {
                 driver.get(eventNode.getLoginURL());
-                Thread.sleep(2000);
+                Thread.sleep(10000);
             }
 
             //查找元素
@@ -205,7 +211,7 @@ public class ChromDriverSpiderUtil {
      * @param driver
      * @param xPath
      */
-    public static void click(WebDriver driver, String xPath){
+    public static boolean click(WebDriver driver, String xPath){
 
         try {
             WebElement clickElement = driver.findElement(By.xpath(xPath));
@@ -217,14 +223,13 @@ public class ChromDriverSpiderUtil {
             }
             clickElement.click();
             //休眠2s等待页面加载
-            try {
-                Thread.sleep(LOADING_WAITING_TIME);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            Thread.sleep(LOADING_WAITING_TIME);
+            return true;
         }catch (Exception e){
             LOGGER.error("click error", e);
         }
+
+        return false;
     }
 
 
