@@ -2,6 +2,8 @@ package com.feng.pigp.fans.service;
 
 import com.feng.pigp.fans.model.Goal;
 import com.feng.pigp.fans.model.User;
+import com.feng.pigp.fans.model.chrom.SpiderQueryContentNode;
+import com.feng.pigp.fans.model.chrom.SpiderSubElemNumNode;
 
 /**
  * @author feng
@@ -37,4 +39,10 @@ public interface HandlerService<T> {
     boolean fullLogin(User user, boolean isClick);
 
     boolean fullLike();
+
+    int getCommentCount(T  object);
+
+    String getCommentId(T object);
+
+    void click(T object);
 }

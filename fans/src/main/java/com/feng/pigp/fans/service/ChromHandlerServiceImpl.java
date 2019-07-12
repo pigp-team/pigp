@@ -233,6 +233,25 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
         return true;
     }
 
+    @Override
+    public int getCommentCount(Node node) {
+        SpiderSubElemNumNode subElemNumNode = new SpiderSubElemNumNode();
+        return ChromDriverSpiderUtil.getSubElementCount(getWebDriver(), subElemNumNode.getParentXPath(), subElemNumNode.getTag());
+    }
+
+    @Override
+    public String getCommentId(Node object) {
+
+        SpiderQueryContentNode node = (SpiderQueryContentNode)object;
+        return ChromDriverSpiderUtil.getContentWithKey(getWebDriver(), node.getContentXPath(), node.getKey());
+    }
+
+    @Override
+    public void click(Node object) {
+        SpiderQueryContentNode node = (SpiderQueryContentNode)object;
+        ChromDriverSpiderUtil.click(getWebDriver(), node.getContentXPath());
+    }
+
     private SpiderLoginEventNode fullInitLoginEventNode(User user) {
 
         if(user==null){

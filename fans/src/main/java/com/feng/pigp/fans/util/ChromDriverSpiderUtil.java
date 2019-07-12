@@ -287,6 +287,22 @@ public class ChromDriverSpiderUtil {
         return Integer.parseInt(temp);
     }
 
+    public static String getContentWithKey(WebDriver driver, String xPath, String key) {
+
+        try {
+            WebElement element = driver.findElement(By.xpath(xPath));
+            if(StringUtils.isNotEmpty(key)){
+                return element.getAttribute(key);
+            }
+
+            return element.getText();
+        } catch (Exception e) {
+            LOGGER.error("getContent error", e);
+        }
+
+        return null;
+    }
+
     public static String getContent(WebDriver driver, String xPath) {
 
         try {

@@ -1,6 +1,7 @@
 package com.feng.pigp.fans.service;
 
 import com.feng.pigp.fans.model.Goal;
+import com.feng.pigp.fans.model.SingletonGoal;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -37,7 +38,7 @@ public class GoalPoolService {
         return true;
     }
 
-    public synchronized List<Goal> getAllGaols() {
-        return ImmutableList.copyOf(goalList);
+    public synchronized List<SingletonGoal> getAllGaols() {
+        return Lists.newArrayList();
     }
 }

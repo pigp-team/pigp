@@ -8,6 +8,15 @@ package com.feng.pigp.fans.model.chrom;
 public class SpiderQueryContentNode extends Node {
 
     private String contentXPath;
+    private String key;
+
+    public String getKey() {
+        return key;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
+    }
 
     public String getContentXPath() {
         return contentXPath;
