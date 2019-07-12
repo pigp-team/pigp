@@ -25,7 +25,7 @@ public class ChromDriverSpiderUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ChromDriverSpiderUtil.class);
     public static final String DRIVER_PATH = "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chromedriver.exe";
-    public static final int LOADING_WAITING_TIME = 3000;
+    public static final int LOADING_WAITING_TIME = 2000;
 
 
     public static void openUrl(WebDriver driver, String url){
@@ -76,19 +76,18 @@ public class ChromDriverSpiderUtil {
         return driver;
     }
 
-    public static void inputAndClick(WebDriver webDriver, SpiderInputClickNode node){
-        for(int i=0; i<10; i++) {
-            try {
-                WebElement webElement = webDriver.findElement(By.xpath(node.getContentXPath()));
-                webElement.clear();
-                webElement.sendKeys(node.getContent());
-                Thread.sleep(1000);
-                ChromDriverSpiderUtil.click(webDriver, node.getClickXPath());
-                return;
-            } catch (Exception e) {
-                LOGGER.error("inputAndClick error", e);
-            }
+    public static boolean inputAndClick(WebDriver webDriver, SpiderInputClickNode node){
+        try {
+            WebElement webElement = webDriver.findElement(By.xpath(node.getContentXPath()));
+            webElement.clear();
+            webElement.sendKeys(node.getContent());
+            Thread.sleep(500);
+            ChromDriverSpiderUtil.click(webDriver, node.getClickXPath());
+            return true;
+        } catch (Exception e) {
+            LOGGER.error("inputAndClick error", e);
         }
+        return false;
     }
 
     /**
@@ -221,30 +220,51 @@ public class ChromDriverSpiderUtil {
     }
 
 
-    public static void clickOrNot(WebDriver driver, String key, String content, String xPath){
+    /**
+     * key存在从key中取值与content比较
+     * key不存在，content存在，直接getText取值与content比较
+     * key，content都不存在，直接点击
+     * @param driver
+     * @param key
+     * @param content
+     * @param xPath
+     */
+    public static boolean clickOrNot(WebDriver driver, String key, String content, String xPath){
 
-        WebElement clickElement = driver.findElement(By.xpath(xPath));
-
-        if(StringUtils.isNotEmpty(key)) {
-            String value = clickElement.getAttribute(key);
-            if (!content.equals(value)) {
-                return;
-            }
-        }
-
-        boolean isDisplay = clickElement.isDisplayed();
-        if(!isDisplay){
-            //滚动
-            JavascriptExecutor js = (JavascriptExecutor)driver;
-            js.executeScript("arguments[0].scrollIntoView()", clickElement);
-        }
-        clickElement.click();
-        //休眠2s等待页面加载
         try {
+            WebElement clickElement = driver.findElement(By.xpath(xPath));
+
+            if (StringUtils.isNotEmpty(key)) {
+                String value = clickElement.getAttribute(key);
+                if (!content.equals(value)) {
+                    LOGGER.info("no match no click {}-{}", content, value);
+                    return false;
+                }
+            }
+
+            if (StringUtils.isNotEmpty(content)) {
+                String value = clickElement.getText();
+                if (!content.equals(value)) {
+                    LOGGER.info("no match no click {}-{}", content, value);
+                    return false;
+                }
+            }
+
+            boolean isDisplay = clickElement.isDisplayed();
+            if (!isDisplay) {
+                //滚动
+                JavascriptExecutor js = (JavascriptExecutor) driver;
+                js.executeScript("arguments[0].scrollIntoView()", clickElement);
+            }
+            clickElement.click();
+            //休眠2s等待页面加载
             Thread.sleep(LOADING_WAITING_TIME);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            return true;
+        }catch (Exception e){
+            LOGGER.error("click error ", e);
         }
+
+        return false;
     }
 
     public static boolean find(WebDriver driver, String xPath){

@@ -5,10 +5,7 @@ import com.feng.pigp.fans.exception.FansException;
 import com.feng.pigp.fans.model.Goal;
 import com.feng.pigp.fans.model.MultiGoal;
 import com.feng.pigp.fans.model.User;
-import com.feng.pigp.fans.model.chrom.Node;
-import com.feng.pigp.fans.model.chrom.SpiderInputClickNode;
-import com.feng.pigp.fans.model.chrom.SpiderLoginEventNode;
-import com.feng.pigp.fans.model.chrom.SpiderMatchClickNode;
+import com.feng.pigp.fans.model.chrom.*;
 import com.feng.pigp.fans.util.ChromDriverSpiderUtil;
 import com.feng.pigp.util.GsonUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -32,11 +29,13 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
     @Override
     public boolean login(User user) {
 
+        LOGGER.info("handler service login start {}", user.getUsername());
         if(threadLocal.get()!=null){
             logout(user);
         }
 
         loginWithOutLogout(user);
+        LOGGER.info("handler service login success {}", user.getUsername());
         return true;
     }
 
@@ -77,58 +76,50 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
 
     @Override
     public boolean like(Goal goal, User user, Node node) { //需要判断
-        /*SpiderMatchClickNode node = new SpiderMatchClickNode();
-        node.setClickXPath(Common.SINA_TOPIC_LIKE);
-        node.setContentXPath(Common.SINA_TOPIC_TITLE);
-        node.setClickContent("赞");
-        node.setClickKey("title");
-        node.setStratIndex(2);
-        node.setEndIndex(12);
-        node.setMatchContent(goal.getMatchContent());*/
-        ChromDriverSpiderUtil.matchAndClick(getWebDriver(), (SpiderMatchClickNode) node);
-        return true;
+
+        SpiderQueryContentNode queryNode = (SpiderQueryContentNode)node;
+        boolean success = ChromDriverSpiderUtil.clickOrNot(getWebDriver(), "title", "赞", queryNode.getContentXPath());
+        if(success) {
+            goal.getMessageMetric().getLikeCount().increment();
+            LOGGER.info("handler service like success {}-{}-{}", user.getUsername(), goal.getUserName(), goal.getId());
+            return true;
+        }
+
+        LOGGER.info("handler service like nothing to do {}-{}-{}", user.getUsername(), goal.getUserName(), goal.getId());
+        return false;
     }
 
     @Override
     public boolean share(Goal goal, User user, Node node) {
 
-        /*SpiderMatchClickNode node = new SpiderMatchClickNode();
-        node.setClickXPath(Common.SINA_TOPIC_SHARE);
-        node.setContentXPath(Common.SINA_TOPIC_TITLE);
-        node.setStratIndex(2);
-        node.setEndIndex(12);
-        node.setMatchContent(goal.getMatchContent());*/
-        ChromDriverSpiderUtil.matchAndClick(getWebDriver(), (SpiderMatchClickNode) node);
+        SpiderInputClickNode inputClickNode = (SpiderInputClickNode)node;
+        //1. 点击的地址
+        ChromDriverSpiderUtil.click(getWebDriver(), inputClickNode.getTriggerXPath());
+        boolean success = ChromDriverSpiderUtil.inputAndClick(getWebDriver(), inputClickNode);
+        if(success) {
+            goal.getMessageMetric().getShareCount().increment();
+            LOGGER.info("handler service share success {}-{}-{}", user.getUsername(), goal.getUserName(), goal.getId());
+            return true;
+        }
 
-        SpiderInputClickNode inputClickNode = new SpiderInputClickNode();
-        /*inputClickNode.setContent("xxx");
-        inputClickNode.setContentXPath(Common.SINA_TOPIC_SHARE_INPUT);
-        inputClickNode.setClickXPath(Common.SINA_TOPIC_SHARE_BUTTON);*/
-        ChromDriverSpiderUtil.inputAndClick(getWebDriver(), inputClickNode);
+        LOGGER.info("handler service share nothing to do {}-{}-{}", user.getUsername(), goal.getUserName(), goal.getId());
         return true;
     }
 
     @Override
     public boolean comment(Goal goal, User user, Node node) {
 
-        /*SpiderMatchClickNode node = new SpiderMatchClickNode();
-        node.setClickXPath(Common.SINA_TOPIC_COMMENT);
-        node.setContentXPath(Common.SINA_TOPIC_TITLE);
-        node.setStratIndex(2);
-        node.setEndIndex(12);
-        node.setMatchContent(goal.getMatchContent());*/
-        int index = ChromDriverSpiderUtil.matchAndClick(getWebDriver(), (SpiderMatchClickNode) node);
-
-        if(index==-1){
-            LOGGER.error("not find topic : {}", GsonUtil.toJson(goal));
-            return false;
+        SpiderInputClickNode inputClickNode = (SpiderInputClickNode)node;
+        //1. 点击的地址
+        ChromDriverSpiderUtil.click(getWebDriver(), inputClickNode.getTriggerXPath());
+        boolean success = ChromDriverSpiderUtil.inputAndClick(getWebDriver(), inputClickNode);
+        if(success) {
+            goal.getMessageMetric().getCommentCount().increment();
+            LOGGER.info("handler service comment success {}-{}-{}", user.getUsername(), goal.getUserName(), goal.getId());
+            return true;
         }
 
-        SpiderInputClickNode inputClickNode = new SpiderInputClickNode();
-        inputClickNode.setContent("xxx");
-        inputClickNode.setContentXPath(String.format(Common.SINA_TOPIC_COMMENT_INPUT, index));
-        inputClickNode.setClickXPath(String.format(Common.SINA_TOPIC_COMMENT_BUTTON, index));
-        ChromDriverSpiderUtil.inputAndClick(getWebDriver(), inputClickNode);
+        LOGGER.info("handler service comment nothing to do {}-{}-{}", user.getUsername(), goal.getUserName(), goal.getId());
         return true;
     }
 
@@ -146,8 +137,17 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
 
     @Override
     public boolean attention(Goal goal, User user, Node node) {
-        ChromDriverSpiderUtil.click(getWebDriver(), Common.SINA_ATTENTION);
-        return true;
+
+        SpiderQueryContentNode queryNode = (SpiderQueryContentNode)node;
+        boolean success = ChromDriverSpiderUtil.clickOrNot(getWebDriver(), null, "关注", ((SpiderQueryContentNode) node).getContentXPath());
+        if(success) {
+            goal.getMessageMetric().getAttentionCount().increment();
+            LOGGER.info("handler service attention success {}-{}-{}", user.getUsername(), goal.getUserName(), goal.getId());
+            return true;
+        }
+
+        LOGGER.info("handler service attention nothing to do {}-{}-{}", user.getUsername(), goal.getUserName(), goal.getId());
+        return false;
     }
 
     @Override
@@ -177,14 +177,17 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
     public String openUrlAndGetUser(Goal goal, User user, Node node) {
 
         for(int i=0; i<10; i++) {
+            LOGGER.info("handler service open goal url  : {}-{}", goal.getId(), user.getUsername());
             MultiGoal multiGoal = (MultiGoal)goal;
+            SpiderQueryContentNode queryNode = (SpiderQueryContentNode) node;
             ChromDriverSpiderUtil.openUrl(getWebDriver(), multiGoal.getUrl());
-            String userName = ChromDriverSpiderUtil.getContent(getWebDriver(), Common.FULL_COMMENT_USERNAME);
+            String userName = ChromDriverSpiderUtil.getContent(getWebDriver(), queryNode.getContentXPath());
             if(StringUtils.isNotEmpty(userName)){
+                LOGGER.info("handler service open goal url success  : {}-{}-{}", goal.getId(), user.getUsername(), userName);
                 return userName;
             }
             try {
-                Thread.sleep(1000);
+                Thread.sleep(1000*i);
             } catch (InterruptedException e) {
                 LOGGER.error("login error", e);
             }
@@ -262,11 +265,18 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
     }
 
     public WebDriver getWebDriver(){
-        WebDriver webDriver = threadLocal.get();
-        if(webDriver==null){
-            webDriver = ChromDriverSpiderUtil.initDriver(0, 0);
-            threadLocal.set(webDriver);
+        try {
+            WebDriver webDriver = threadLocal.get();
+            if (webDriver == null) {
+                webDriver = ChromDriverSpiderUtil.initDriver(0, 0);
+                threadLocal.set(webDriver);
+                Thread.sleep(1000);
+            }
+            return webDriver;
+        }catch (Exception e){
+            LOGGER.error("init webChrom fail", e);
         }
-        return webDriver;
+
+        throw new FansException("error");
     }
 }

@@ -11,7 +11,7 @@ public class Common {
     public static String SINA_LOGIN_USERNAME = "//*[@id=\"loginname\"]";
     public static String SINA_LOGIN_PWD = "//*[@id=\"pl_login_form\"]/div/div[3]/div[2]/div/input";
     public static String SINA_LOGIN_BUTTON = "//*[@id=\"pl_login_form\"]/div/div[3]/div[6]/a";
-    public static String SINA_LOGIN_ACK = "//*[@id=\"pl_common_top\"]/div/div/div[3]/div[1]/ul/li[5]/a/em[2]";
+    public static String SINA_LOGIN_ACK = "//*[@id=\"plc_top\"]/div/div/div[3]/div[1]/ul/li[5]/a/em[2]";
     public static String SINA_LOGOUT_TOP = "//*[@id=\"pl_common_top\"]/div/div/div[3]/div[2]/div[2]/a";
     public static String SINA_LOGOUT = "//*[@id=\"pl_common_top\"]/div/div/div[3]/div[2]/div[2]/div/ul/li[10]/a";
     public static String SINA_SEARCH_INPUT = "//*[@id=\"pl_common_top\"]/div/div/div[2]/input";
@@ -41,4 +41,11 @@ public class Common {
     public static String Full_LOGIN_BUTTON = "//*[@id=\"layer_15628458207771\"]/div[2]/div[3]/div[3]/div[6]/a";
 
     public static String Full_LIKE = "//*[@id=\"Pl_Official_WeiboDetail__73\"]/div/div/div/div[2]/div/ul/li[4]/a";
+    public static String MESSAGE_COMMENT_FLAG = "//*[@id=\"Pl_Official_WeiboDetail__73\"]/div/div/div/div[2]/div/ul/li[3]/a";
+    public static String MESSAGE_COMMENT_INFPUT = "//*[@id=\"Pl_Official_WeiboDetail__73\"]/div/div/div/div[4]/div/div[2]/div[2]/div[1]/textarea";
+    public static String MESSAAGE_COMMENT_SUBMIT = "//*[@id=\"Pl_Official_WeiboDetail__73\"]/div/div/div/div[4]/div/div[2]/div[2]/div[2]/div[1]/a";
+
+    public static String MESSAGE_SHARE_FLAG = "//*[@id=\"Pl_Official_WeiboDetail__73\"]/div/div/div/div[2]/div/ul/li[2]/a";
+    public static String MESSAGE_SHARE_INPUT = "//*[@id=\"Pl_Official_WeiboDetail__73\"]/div/div/div/div[5]/div/div[3]/div/div/div/div/div/div[1]/textarea";
+    public static String MESSAGE_SHARE_SUBMIT = "//*[@id=\"Pl_Official_WeiboDetail__73\"]/div/div/div/div[5]/div/div[3]/div/div/div/div/div/div[2]/div[1]/a";
 }

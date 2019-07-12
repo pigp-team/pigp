@@ -16,9 +16,9 @@ public class Goal {
     private int id;
     private Goal next;
 
-    private GoalMetric messageMetric;
-    private GoalMetric selfCommentMetric;
-    private GoalMetric commentMetric;
+    private GoalMetric messageMetric = new GoalMetric();
+    private GoalMetric selfCommentMetric = new GoalMetric();
+    private GoalMetric commentMetric = new GoalMetric();
 
     public String getUserName() {
         return userName;

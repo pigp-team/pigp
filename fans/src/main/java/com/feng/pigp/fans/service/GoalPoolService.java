@@ -26,10 +26,10 @@ public class GoalPoolService {
     //可以提交任务
     public synchronized boolean submitGoalTask(Goal goal){
 
-        Goal temp = user2Goal.get(goal.getUserId());
+        Goal temp = user2Goal.get(goal.getUserName());
         if(temp==null){
             goalList.add(goal);
-            user2Goal.put(goal.getUserId(), goal);
+            user2Goal.put(goal.getUserName(), goal);
             return true;
         }
 

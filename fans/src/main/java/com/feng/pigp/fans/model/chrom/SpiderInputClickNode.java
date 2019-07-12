@@ -7,6 +7,7 @@ package com.feng.pigp.fans.model.chrom;
  */
 public class SpiderInputClickNode extends Node{
 
+    private String triggerXPath;
     private String content;
     private String contentXPath;
     private String clickXPath;
@@ -33,5 +34,13 @@ public class SpiderInputClickNode extends Node{
 
     public void setClickXPath(String clickXPath) {
         this.clickXPath = clickXPath;
+    }
+
+    public String getTriggerXPath() {
+        return triggerXPath;
+    }
+
+    public void setTriggerXPath(String triggerXPath) {
+        this.triggerXPath = triggerXPath;
     }
 }

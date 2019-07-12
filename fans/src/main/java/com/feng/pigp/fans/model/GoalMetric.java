@@ -5,10 +5,10 @@ import java.util.concurrent.atomic.LongAdder;
 public class GoalMetric {
 
     //统计相关
-    private LongAdder AttentionCount;
-    private LongAdder LikeCount;
-    private LongAdder CommentCount;
-    private LongAdder ShareCount;
+    private LongAdder AttentionCount = new LongAdder();
+    private LongAdder LikeCount = new LongAdder();
+    private LongAdder CommentCount = new LongAdder();
+    private LongAdder ShareCount = new LongAdder();
 
     public LongAdder getAttentionCount() {
         return AttentionCount;
