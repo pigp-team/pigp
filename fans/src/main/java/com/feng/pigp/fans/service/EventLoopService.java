@@ -188,7 +188,7 @@ public class EventLoopService {
                             continue;
                         }
 
-                        if (commentIdSet.contains(commentId)) {//这一句可以注释掉，不会受到消息id的限制
+                        //if (commentIdSet.contains(commentId)) {//这一句可以注释掉，不会受到消息id的限制
                             LOGGER.info("find comment :{}", commentId);
                             //开始处理评论
                             processedSet.add(commentId);
@@ -271,7 +271,7 @@ public class EventLoopService {
                                 hasProcessId.add(subCommentId);
                                 i++;
                             }
-                        }
+                        //}
                         index++;
                         LOGGER.info("find comment not match : {}", commentId);
                     }
