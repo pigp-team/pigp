@@ -176,6 +176,7 @@ public class EventLoopService {
                     int index = 1;
                     while (index < 1000) {
 
+                        Thread.sleep(500);
                         SpiderQueryContentNode commentIdNode = new SpiderQueryContentNode();
                         commentIdNode.setContentXPath(String.format(Common.COMMENT_TOTOLE_FLAG, index));
                         commentIdNode.setKey("comment_id");
