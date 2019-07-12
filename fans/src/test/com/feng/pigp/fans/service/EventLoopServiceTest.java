@@ -88,7 +88,7 @@ public class EventLoopServiceTest {
         user3.setPwd("kpwcms8038b");
 
 
-        userPoolService.addUser(user1);
+        //userPoolService.addUser(user1);
         userPoolService.addUser(user2);
         userPoolService.addUser(user3);
 
