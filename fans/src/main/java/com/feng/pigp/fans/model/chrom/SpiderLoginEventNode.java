@@ -5,7 +5,7 @@ package com.feng.pigp.fans.model.chrom;
  * @date 2019/3/11 16:43
  * @since 1.0
  */
-public class SpiderLoginEventNode{
+public class SpiderLoginEventNode extends Node{
 
     private String userName;
     private String userNameXPath;

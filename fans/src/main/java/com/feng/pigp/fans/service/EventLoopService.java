@@ -1,6 +1,7 @@
 package com.feng.pigp.fans.service;
 
 import com.feng.pigp.fans.model.Goal;
+import com.feng.pigp.fans.model.MultiGoal;
 import com.feng.pigp.fans.model.User;
 import com.feng.pigp.util.GsonUtil;
 import org.slf4j.Logger;
@@ -23,11 +24,11 @@ public class EventLoopService {
     @Resource
     private UserPoolService userPoolService;
     @Resource
-    private HandlerService chromHandlerService;
+    private HandlerService handlerService;
     /**
      * 为了避免账号的切换，登录上账号之后，该账号可以做所有的事情
      */
-    public void run(){
+    public void singletonRun(){
 
         try{
 
@@ -40,20 +41,20 @@ public class EventLoopService {
                 }
 
                 //登录
-                chromHandlerService.login(user);
+                handlerService.login(user);
 
                 //获取所有的任务
                 List<Goal> goalList = goalPoolService.getAllGaols();
                 for(Goal goal : goalList){
 
-                    if(goal.isFinished()){
+                    /*if(goal.isFinished()){
                         LOGGER.info("goal has finished", GsonUtil.toJson(goal));
-                    }
+                    }*/
 
                     //找该goal的用户,开始查找
-                    chromHandlerService.inputAndClick(goal.getUserId());
+                    //chromHandlerService.inputAndClick(goal.getUserId());
                     //进入该用户的首页
-                    chromHandlerService.enterUserIndex(goal.getUserId());
+                    //chromHandlerService.enterUserIndex(goal.getUserId());
                     //处理该用户相关的操作
                     Goal curGoal = goal;
                     while(curGoal!=null){
@@ -74,7 +75,7 @@ public class EventLoopService {
 
     private void processOperation(Goal curGoal) {
 
-        switch (curGoal.getEventType()){
+        /*switch (curGoal.getEventType()){
             case LIKE:
                 chromHandlerService.like(curGoal);
                 break;
@@ -86,13 +87,36 @@ public class EventLoopService {
                 break;
             default:
                 break;
-        }
+        }*/
     }
 
-    //1. 获取目标
-    //2. 获取用户
-    //3. 登录
-    //4. 搜索内容
-    //5. 执行操作
-    //6. 成功计数
+
+    public void multiRun(){
+
+        MultiGoal goal = new MultiGoal();
+        goal.setUrl("https://weibo.com/6117570574/HC56wFQBN?from=page_1005056117570574_profile&wvr=6&mod=weibotime");
+
+        for(;;) {
+            //1. 获取用户
+            User user = userPoolService.getUser();
+            if (user == null) {
+                LOGGER.error("event loop query user error");
+                break;
+            }
+
+            //登录
+            handlerService.login(user);
+
+            //2.打开连接
+            String userName = handlerService.openUrlAndGetUser(goal, user, null);
+
+            //关注
+            handlerService.fullAttention();
+
+            //点赞
+            handlerService.fullLike();
+
+            break;
+        }
+    }
 }

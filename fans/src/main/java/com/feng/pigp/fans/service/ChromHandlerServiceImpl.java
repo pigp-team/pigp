@@ -2,9 +2,10 @@ package com.feng.pigp.fans.service;
 
 import com.feng.pigp.fans.common.Common;
 import com.feng.pigp.fans.exception.FansException;
-import com.feng.pigp.fans.model.FullGoal;
 import com.feng.pigp.fans.model.Goal;
+import com.feng.pigp.fans.model.MultiGoal;
 import com.feng.pigp.fans.model.User;
+import com.feng.pigp.fans.model.chrom.Node;
 import com.feng.pigp.fans.model.chrom.SpiderInputClickNode;
 import com.feng.pigp.fans.model.chrom.SpiderLoginEventNode;
 import com.feng.pigp.fans.model.chrom.SpiderMatchClickNode;
@@ -22,7 +23,7 @@ import org.springframework.stereotype.Service;
  * @since 1.0
  */
 @Service
-public class ChromHandlerServiceImpl implements HandlerService {
+public class ChromHandlerServiceImpl implements HandlerService<Node> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ChromHandlerServiceImpl.class);
 
@@ -31,19 +32,23 @@ public class ChromHandlerServiceImpl implements HandlerService {
     @Override
     public boolean login(User user) {
 
-        /*if(threadLocal.get()!=null){
-            logout();
-        }*/
+        if(threadLocal.get()!=null){
+            logout(user);
+        }
+
+        loginWithOutLogout(user);
+        return true;
+    }
+
+    private void loginWithOutLogout(User user) {
 
         SpiderLoginEventNode node = initLoginEventNode(user);
         ChromDriverSpiderUtil.login(getWebDriver(), node);
 
         //确认是否已经登录成功
         if(!isLogin()){
-            login(user);
+            loginWithOutLogout(user);
         }
-
-        return true;
     }
 
     @Override
@@ -71,48 +76,48 @@ public class ChromHandlerServiceImpl implements HandlerService {
     }
 
     @Override
-    public boolean like(Goal goal) { //需要判断
-        SpiderMatchClickNode node = new SpiderMatchClickNode();
+    public boolean like(Goal goal, User user, Node node) { //需要判断
+        /*SpiderMatchClickNode node = new SpiderMatchClickNode();
         node.setClickXPath(Common.SINA_TOPIC_LIKE);
         node.setContentXPath(Common.SINA_TOPIC_TITLE);
         node.setClickContent("赞");
         node.setClickKey("title");
         node.setStratIndex(2);
         node.setEndIndex(12);
-        node.setMatchContent(goal.getMatchContent());
-        ChromDriverSpiderUtil.matchAndClick(getWebDriver(), node);
+        node.setMatchContent(goal.getMatchContent());*/
+        ChromDriverSpiderUtil.matchAndClick(getWebDriver(), (SpiderMatchClickNode) node);
         return true;
     }
 
     @Override
-    public boolean share(Goal goal) {
+    public boolean share(Goal goal, User user, Node node) {
 
-        SpiderMatchClickNode node = new SpiderMatchClickNode();
+        /*SpiderMatchClickNode node = new SpiderMatchClickNode();
         node.setClickXPath(Common.SINA_TOPIC_SHARE);
         node.setContentXPath(Common.SINA_TOPIC_TITLE);
         node.setStratIndex(2);
         node.setEndIndex(12);
-        node.setMatchContent(goal.getMatchContent());
-        ChromDriverSpiderUtil.matchAndClick(getWebDriver(), node);
+        node.setMatchContent(goal.getMatchContent());*/
+        ChromDriverSpiderUtil.matchAndClick(getWebDriver(), (SpiderMatchClickNode) node);
 
         SpiderInputClickNode inputClickNode = new SpiderInputClickNode();
-        inputClickNode.setContent("xxx");
+        /*inputClickNode.setContent("xxx");
         inputClickNode.setContentXPath(Common.SINA_TOPIC_SHARE_INPUT);
-        inputClickNode.setClickXPath(Common.SINA_TOPIC_SHARE_BUTTON);
+        inputClickNode.setClickXPath(Common.SINA_TOPIC_SHARE_BUTTON);*/
         ChromDriverSpiderUtil.inputAndClick(getWebDriver(), inputClickNode);
         return true;
     }
 
     @Override
-    public boolean comment(Goal goal) {
+    public boolean comment(Goal goal, User user, Node node) {
 
-        SpiderMatchClickNode node = new SpiderMatchClickNode();
+        /*SpiderMatchClickNode node = new SpiderMatchClickNode();
         node.setClickXPath(Common.SINA_TOPIC_COMMENT);
         node.setContentXPath(Common.SINA_TOPIC_TITLE);
         node.setStratIndex(2);
         node.setEndIndex(12);
-        node.setMatchContent(goal.getMatchContent());
-        int index = ChromDriverSpiderUtil.matchAndClick(getWebDriver(), node);
+        node.setMatchContent(goal.getMatchContent());*/
+        int index = ChromDriverSpiderUtil.matchAndClick(getWebDriver(), (SpiderMatchClickNode) node);
 
         if(index==-1){
             LOGGER.error("not find topic : {}", GsonUtil.toJson(goal));
@@ -128,25 +133,25 @@ public class ChromHandlerServiceImpl implements HandlerService {
     }
 
     @Override
-    public boolean collection(Goal goal) {
-        SpiderMatchClickNode node = new SpiderMatchClickNode();
+    public boolean collection(Goal goal, User user, Node node) {
+        /*SpiderMatchClickNode node = new SpiderMatchClickNode();
         node.setClickXPath(Common.SINA_TOPIC_COLLECTION);
         node.setContentXPath(Common.SINA_TOPIC_TITLE);
         node.setStratIndex(2);
         node.setEndIndex(12);
-        node.setMatchContent(goal.getMatchContent());
-        ChromDriverSpiderUtil.matchAndClick(getWebDriver(), node);
+        node.setMatchContent(goal.getMatchContent());*/
+        ChromDriverSpiderUtil.matchAndClick(getWebDriver(), (SpiderMatchClickNode) node);
         return true;
     }
 
     @Override
-    public boolean attention(Goal goal) {
+    public boolean attention(Goal goal, User user, Node node) {
         ChromDriverSpiderUtil.click(getWebDriver(), Common.SINA_ATTENTION);
         return true;
     }
 
     @Override
-    public boolean logout() {
+    public boolean logout(User user) {
         ChromDriverSpiderUtil.click(getWebDriver(), Common.SINA_LOGOUT_TOP);
         ChromDriverSpiderUtil.click(getWebDriver(), Common.SINA_LOGOUT);
         return true;
@@ -169,10 +174,11 @@ public class ChromHandlerServiceImpl implements HandlerService {
     }
 
     @Override
-    public String openUrlAndGetUser(FullGoal fullGoal) {
+    public String openUrlAndGetUser(Goal goal, User user, Node node) {
 
         for(int i=0; i<10; i++) {
-            ChromDriverSpiderUtil.openUrl(getWebDriver(), fullGoal.getUrl());
+            MultiGoal multiGoal = (MultiGoal)goal;
+            ChromDriverSpiderUtil.openUrl(getWebDriver(), multiGoal.getUrl());
             String userName = ChromDriverSpiderUtil.getContent(getWebDriver(), Common.FULL_COMMENT_USERNAME);
             if(StringUtils.isNotEmpty(userName)){
                 return userName;

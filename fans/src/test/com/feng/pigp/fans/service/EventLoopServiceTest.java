@@ -27,11 +27,16 @@ public class EventLoopServiceTest {
     @Test
     public void run(){
         Goal goal = new Goal();
-        goal.setUserId("Logic-Luo");
+        /*goal.setUserId("Logic-Luo");
         goal.setEventType(EventTypeEnum.LIKE);
         goal.setMatchContent("#哈哈哈# 哈哈");
-        goal.setCountLimit(10);
+        goal.setCountLimit(10);*/
         goalPoolService.submitGoalTask(goal);
-        eventLoopService.run();
+        eventLoopService.singletonRun();
+    }
+
+    @Test
+    public void multiRun() throws Exception {
+        eventLoopService.multiRun();
     }
 }

@@ -1,6 +1,6 @@
 package com.feng.pigp.fans.model;
 
-public class MultiMetric extends Goal{
+public class MultiGoal extends Goal{
 
     //连接形式
     private String url;

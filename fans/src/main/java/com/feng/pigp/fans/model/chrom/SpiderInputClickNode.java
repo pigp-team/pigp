@@ -5,7 +5,7 @@ package com.feng.pigp.fans.model.chrom;
  * @date 2019/7/10 13:32
  * @since 1.0
  */
-public class SpiderInputClickNode {
+public class SpiderInputClickNode extends Node{
 
     private String content;
     private String contentXPath;

@@ -3,6 +3,7 @@ package com.feng.pigp.fans.model;
 import com.feng.pigp.fans.common.EventTypeEnum;
 
 import java.util.List;
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * @author feng
@@ -11,58 +12,52 @@ import java.util.List;
  */
 public class Goal {
 
-    private EventTypeEnum eventType;
-    private int countLimit;
-    private int curCount;
-
-    private String userId;
-    private String matchContent;
-
+    private String userName;
+    private int id;
     private Goal next;
 
-    public int getCurCount() {
-        return curCount;
+    private GoalMetric messageMetric;
+    private GoalMetric selfCommentMetric;
+    private GoalMetric commentMetric;
+
+    public String getUserName() {
+        return userName;
     }
 
-    public void setCurCount(int curCount) {
-        this.curCount = curCount;
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
-    public String getUserId() {
-        return userId;
+    public int getId() {
+        return id;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setId(int id) {
+        this.id = id;
     }
 
-
-    public EventTypeEnum getEventType() {
-        return eventType;
+    public GoalMetric getMessageMetric() {
+        return messageMetric;
     }
 
-    public void setEventType(EventTypeEnum eventType) {
-        this.eventType = eventType;
+    public void setMessageMetric(GoalMetric messageMetric) {
+        this.messageMetric = messageMetric;
     }
 
-    public String getMatchContent() {
-        return matchContent;
+    public GoalMetric getSelfCommentMetric() {
+        return selfCommentMetric;
     }
 
-    public void setMatchContent(String matchContent) {
-        this.matchContent = matchContent;
+    public void setSelfCommentMetric(GoalMetric selfCommentMetric) {
+        this.selfCommentMetric = selfCommentMetric;
     }
 
-    public int getCountLimit() {
-        return countLimit;
+    public GoalMetric getCommentMetric() {
+        return commentMetric;
     }
 
-    public void setCountLimit(int countLimit) {
-        this.countLimit = countLimit;
-    }
-
-    public boolean isFinished(){
-        return this.curCount>=this.countLimit;
+    public void setCommentMetric(GoalMetric commentMetric) {
+        this.commentMetric = commentMetric;
     }
 
     public Goal getNext() {
