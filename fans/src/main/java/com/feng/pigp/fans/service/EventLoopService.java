@@ -102,7 +102,10 @@ public class EventLoopService {
         }
 
         String topic = handlerService.getCommentId(new SpiderQueryContentNode().setContentXPath(Common.SINA_TOPIC_MESSAGE));
-        processTopic(goal, user, topic);
+
+        if(goal.getUserName().equals(curUserName)) {
+            processTopic(goal, user, topic);
+        }
         processComment(goal, user,topic);
     }
 
