@@ -6,6 +6,7 @@ import com.feng.pigp.fans.model.chrom.SpiderInputClickNode;
 import com.feng.pigp.fans.model.chrom.SpiderLoginEventNode;
 import com.feng.pigp.fans.model.chrom.SpiderMatchClickNode;
 import com.google.common.collect.Maps;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -13,6 +14,8 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +31,7 @@ public class ChromDriverSpiderUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ChromDriverSpiderUtil.class);
     public static final String DRIVER_PATH = "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chromedriver.exe";
+    private static final String SAVE_PATH =  "D:\\imag\\";
     public static final int LOADING_WAITING_TIME = 2000;
 
     private static final int MAX_CLICK_ERR_COUNT = 5;
@@ -148,6 +152,29 @@ public class ChromDriverSpiderUtil {
             element.sendKeys(eventNode.getUserName());
             WebElement pwdElement = driver.findElement(By.xpath(eventNode.getPasswdXPath()));
             pwdElement.sendKeys(eventNode.getPasswd());
+            if(find(driver, eventNode.getValidateCodeXPath())){
+                //验证码存在
+                for(int i=0; i<10; i++) {
+                    String savePath = SAVE_PATH + System.currentTimeMillis() + ".png";
+                    WebElement validate = driver.findElement(By.xpath(eventNode.getValidateCodeXPath()));
+                    screenShot(driver, savePath, validate.getRect().getX(), validate.getRect().getY(),
+                            Integer.parseInt(validate.getAttribute("width")), Integer.parseInt(validate.getAttribute("height")));
+                    //获取解析的结果
+                    File file = new File(savePath);
+                    String code = "";
+                    //将原图片名称修改为正确解析的名称
+                    if (StringUtils.isEmpty(code)) {
+                        LOGGER.error("code error");
+                        file.delete();
+                        click(driver, eventNode.getValidateCodeXPath());
+                        continue;
+                    }
+                    //设置验证码
+                    File newfile = new File(code);
+                    file.renameTo(newfile);
+                    break;
+                }
+            }
             Thread.sleep(100);
             click(driver, eventNode.getLoginXPath());
             LOGGER.info("{} : login success");
@@ -333,6 +360,18 @@ public class ChromDriverSpiderUtil {
         }
 
         return false;
+    }
+
+    public static void screenShot(WebDriver driver, String saveName, int x, int y, int w, int h){
+
+        File file = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+
+        try {
+            FileUtils.copyFile(file, new File(saveName));
+            ImageUtils.cutImageLeftAndRight(saveName, x, y, w, h);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static int getIntContent(WebDriver driver, String xPath, String startChar, String endChar){

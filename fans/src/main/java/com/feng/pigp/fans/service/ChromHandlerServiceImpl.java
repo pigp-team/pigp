@@ -307,6 +307,7 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
         node.setUserNameXPath(Common.SINA_LOGIN_USERNAME);
         node.setPasswd(user.getPwd());
         node.setPasswdXPath(Common.SINA_LOGIN_PWD);
+        node.setValidateCodeXPath(Common.VALIDATE_CODE_IMAGE);
         return node;
     }
 

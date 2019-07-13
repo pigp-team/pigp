@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -276,6 +277,7 @@ public class ChromDriverSpider {
         JavascriptExecutor js = (JavascriptExecutor)driver;
         js.executeScript("document.documentElement.scrollTop=" + height);
         File file = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+
         try {
             FileUtils.copyFile(file, new File(saveName));
             ImageUtils.cutImageLeftAndRight(saveName, 20);

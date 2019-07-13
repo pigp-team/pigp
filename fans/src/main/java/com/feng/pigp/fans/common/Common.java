@@ -70,4 +70,6 @@ public class Common {
     public static String COMMENT_SUB_MORE = "//*[@id=\"Pl_Official_WeiboDetail__73\"]/div/div/div/div[4]/div/div[3]/div[2]/div/div/div[%s]/div[2]/div[4]/div/div[%s]/div/a";
 
     public static String ATTENTION_ALERT_ERROR = "//*[@id=\"layer_15629958422301\"]";
+    public static String VALIDATE_CODE_IMAGE = "//*[@id=\"pl_login_form\"]/div/div[3]/div[3]/a/img";
+    public static String VALIDATE_CODE_INPUT = "//*[@id=\"pl_login_form\"]/div/div[3]/div[3]/div/input";
 }

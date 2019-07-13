@@ -13,6 +13,7 @@ public class SpiderLoginEventNode extends Node{
     private String passwdXPath;
     private String loginURL;
     private String loginXPath;
+    private String validateCodeXPath;
 
     public String getUserName() {
         return userName;
@@ -60,5 +61,13 @@ public class SpiderLoginEventNode extends Node{
 
     public void setLoginXPath(String loginXPath) {
         this.loginXPath = loginXPath;
+    }
+
+    public String getValidateCodeXPath() {
+        return validateCodeXPath;
+    }
+
+    public void setValidateCodeXPath(String validateCodeXPath) {
+        this.validateCodeXPath = validateCodeXPath;
     }
 }
