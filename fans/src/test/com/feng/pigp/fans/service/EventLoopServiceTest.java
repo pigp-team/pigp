@@ -26,12 +26,8 @@ public class EventLoopServiceTest {
     private EventLoopService eventLoopService;
 
     @Test
-    public void run(){
-    }
-
-    @Test
     public void multiRun() throws Exception {
 
-        eventLoopService.multiRun();
+        eventLoopService.run();
     }
 }

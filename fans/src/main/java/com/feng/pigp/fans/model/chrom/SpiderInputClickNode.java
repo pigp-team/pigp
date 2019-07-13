@@ -16,31 +16,35 @@ public class SpiderInputClickNode extends Node{
         return content;
     }
 
-    public void setContent(String content) {
+    public SpiderInputClickNode setContent(String content) {
         this.content = content;
+        return this;
     }
 
     public String getContentXPath() {
         return contentXPath;
     }
 
-    public void setContentXPath(String contentXPath) {
+    public SpiderInputClickNode setContentXPath(String contentXPath) {
         this.contentXPath = contentXPath;
+        return this;
     }
 
     public String getClickXPath() {
         return clickXPath;
     }
 
-    public void setClickXPath(String clickXPath) {
+    public SpiderInputClickNode setClickXPath(String clickXPath) {
         this.clickXPath = clickXPath;
+        return this;
     }
 
     public String getTriggerXPath() {
         return triggerXPath;
     }
 
-    public void setTriggerXPath(String triggerXPath) {
+    public SpiderInputClickNode setTriggerXPath(String triggerXPath) {
         this.triggerXPath = triggerXPath;
+        return this;
     }
 }

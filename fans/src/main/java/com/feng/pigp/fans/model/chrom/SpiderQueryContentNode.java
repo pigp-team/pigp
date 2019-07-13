@@ -14,15 +14,17 @@ public class SpiderQueryContentNode extends Node {
         return key;
     }
 
-    public void setKey(String key) {
+    public SpiderQueryContentNode setKey(String key) {
         this.key = key;
+        return this;
     }
 
     public String getContentXPath() {
         return contentXPath;
     }
 
-    public void setContentXPath(String contentXPath) {
+    public SpiderQueryContentNode setContentXPath(String contentXPath) {
         this.contentXPath = contentXPath;
+        return this;
     }
 }

@@ -5,6 +5,7 @@ import com.feng.pigp.fans.model.MultiGoal;
 import com.feng.pigp.fans.model.User;
 import com.feng.pigp.fans.model.chrom.SpiderInputClickNode;
 import com.feng.pigp.fans.model.chrom.SpiderQueryContentNode;
+import com.feng.pigp.fans.util.ToolUtil;
 import com.feng.pigp.util.GsonUtil;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
@@ -25,6 +26,10 @@ import java.util.Set;
 public class EventLoopService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EventLoopService.class);
+    private static final int MAX_COMMENT_COUNT = 100;
+    private static final int MAX_SUB_COMMONT_COUNT = 20;
+    private static final String COMMENT_ID_KEY = "comment_id";
+
     @Resource
     private GoalPoolService goalPoolService;
     @Resource
@@ -35,8 +40,12 @@ public class EventLoopService {
     private CommentPoolService commentPoolService;
 
 
-    public void multiRun(){
+    /**
+     * 主流程方法
+     */
+    public void run(){
 
+        boolean isFirst = true;
         for(;;) {
             try {
                 //1. 获取用户
@@ -46,175 +55,156 @@ public class EventLoopService {
                     break;
                 }
 
-                //登录
-                handlerService.login(user);
-
-                List<MultiGoal> goalList = goalPoolService.getMulti();
-                for(MultiGoal goal : goalList) {
-
-                    Set<String> commentIdSet = goal.getCommonIdList();
-                    //2.打开连接
-                    SpiderQueryContentNode queryNode = new SpiderQueryContentNode();
-                    queryNode.setContentXPath(Common.FULL_COMMENT_USERNAME);
-
-                    String userName = goal.getUserName();
-                    String curUserName = handlerService.openUrlAndGetUser(goal, user, queryNode); //用户名可以修改为目标人物，轻松实现自评和他评
-                    if(userName.equals(curUserName)){
-                        LOGGER.info("self common : {}", userName);
-                    }else{
-                        LOGGER.info("your common : {}-{}", userName, curUserName);
-                    }
-
-                    SpiderQueryContentNode queryTopicNode = new SpiderQueryContentNode();
-                    queryTopicNode.setContentXPath(Common.SINA_TOPIC_MESSAGE);
-                    String topic = handlerService.getCommentId(queryTopicNode);
-                    if (StringUtils.isEmpty(userName)) {
-                        LOGGER.error("open goal url fail {}-{}", GsonUtil.toJson(goal), user.getUsername());
-                        continue;
-                    }
-
-                    //关注
-                    SpiderQueryContentNode attentionNode = new SpiderQueryContentNode();
-                    attentionNode.setContentXPath(Common.FULL_COMMENT_ATTENTION);
-                    handlerService.attention(goal, user, attentionNode);
-
-                    //点赞
-                    SpiderQueryContentNode messageLikeNode = new SpiderQueryContentNode();
-                    messageLikeNode.setContentXPath(Common.Full_LIKE);
-                    handlerService.like(goal, user, messageLikeNode);
-
-                    //转发
-                    SpiderInputClickNode messageShareNode = new SpiderInputClickNode();
-                    messageShareNode.setTriggerXPath(Common.MESSAGE_SHARE_FLAG);
-                    messageShareNode.setClickXPath(Common.MESSAGE_SHARE_SUBMIT);
-                    messageShareNode.setContentXPath(Common.MESSAGE_SHARE_INPUT);
-                    messageShareNode.setContent(commentPoolService.queryCommentWithShare(goal, topic));
-                    handlerService.share(goal, user, messageShareNode);
-
-                    //评论
-                    SpiderInputClickNode messageCommentNode = new SpiderInputClickNode();
-                    messageCommentNode.setTriggerXPath(Common.MESSAGE_COMMENT_FLAG);
-                    messageCommentNode.setClickXPath(Common.MESSAAGE_COMMENT_SUBMIT);
-                    messageCommentNode.setContentXPath(Common.MESSAGE_COMMENT_INFPUT);
-                    messageCommentNode.setContent(commentPoolService.queryCommentWithComment(goal, topic));
-                    handlerService.comment(goal, user, messageCommentNode);
-
-                    //处理评论相关
-                    if (CollectionUtils.isEmpty(commentIdSet)) {
-                        continue;
-                    }
-
-                    Set<String> processedSet = Sets.newHashSet();
-                    int index = 1;
-                    while (index < 1000) {
-
-                        Thread.sleep(500);
-                        SpiderQueryContentNode commentIdNode = new SpiderQueryContentNode();
-                        commentIdNode.setContentXPath(String.format(Common.COMMENT_TOTOLE_FLAG, index));
-                        commentIdNode.setKey("comment_id");
-                        String commentId = handlerService.getCommentId(commentIdNode);
-                        if (StringUtils.isEmpty(commentId)) {
-                            //还是没有找到，加载更多
-                            SpiderQueryContentNode moreNode = new SpiderQueryContentNode();
-                            moreNode.setContentXPath(Common.COMMENT_TOTAL_MORE);
-                            handlerService.clickWithScollBottom(moreNode);
-                            continue;
-                        }
-
-                        //if (commentIdSet.contains(commentId)) {//这一句可以注释掉，不会受到消息id的限制
-                            LOGGER.info("find comment :{}", commentId);
-                            //开始处理评论
-                            processedSet.add(commentId);
-                            //处理该条评论
-                            //1. 获取首楼，判断是否自评
-                            SpiderQueryContentNode commentNode = new SpiderQueryContentNode();
-                            commentNode.setContentXPath(String.format(Common.COMMENT_FIRST_USERNAME, index));
-                            String firstUserName = handlerService.getCommentId(commentNode);
-                            if (userName.equals(firstUserName)) {
-                                LOGGER.info("self comment {}-{}", user.getUsername(), goal.getUserName());
-                                //自评， 回复+点赞
-
-                                //先不管时间
-                                SpiderQueryContentNode firstCommentNode = new SpiderQueryContentNode();
-                                firstCommentNode.setContentXPath(String.format(Common.COMMENT_FIRST_LIKE, index));
-                                handlerService.like(goal, user, firstCommentNode);
-                                //回复
-                                SpiderInputClickNode firstCommentReplayNode = new SpiderInputClickNode();
-                                firstCommentReplayNode.setTriggerXPath(String.format(Common.COMMENT_FIRST_COMMENT, index));
-                                firstCommentReplayNode.setClickXPath(String.format(Common.COMMENT_FIRST_COMMENT_SUBMIT, index));
-                                firstCommentReplayNode.setContentXPath(String.format(Common.COMMENT_FIRST_COMMENT_INPUT, index));
-                                firstCommentReplayNode.setContent(commentPoolService.queryCommentWithInternalComment(goal, topic));
-                                handlerService.comment(goal, user, firstCommentReplayNode);
-                            }
-
-                            //楼中楼 回复+点赞
-                            //获取共有回复数
-                            Set<String> hasProcessId = Sets.newHashSet();
-                            int subCommentCount = 10;
-                            for (int i = 1; i <= subCommentCount; ) {
-
-                                SpiderQueryContentNode subCommentIdNode = new SpiderQueryContentNode();
-                                subCommentIdNode.setContentXPath(String.format(Common.COMMENT_SUB_TOTOLE_FLAG, index, i));
-                                subCommentIdNode.setKey("comment_id");
-                                String subCommentId = handlerService.getCommentId(subCommentIdNode);
-
-                                if (StringUtils.isEmpty(subCommentId)) {
-                                    //查看更多是没有commentId的
-                                    /*SpiderQueryContentNode subMoreNode = new SpiderQueryContentNode();
-                                    subMoreNode.setContentXPath(String.format(Common.COMMENT_SUB_MORE, index, i));
-                                    handlerService.click(subMoreNode);*/
-                                    break; //不展开
-
-                                }
-
-                                if (hasProcessId.contains(subCommentId)) {
-                                    i++;
-                                    continue;
-                                }
-
-                                //1. 获取子评论姓名
-                                SpiderQueryContentNode subCommentNode = new SpiderQueryContentNode();
-                                subCommentNode.setContentXPath(String.format(Common.COMMENT_SUB_USERNAME, index, i));
-                                String subUserName = handlerService.getCommentId(subCommentNode);
-
-                                if (StringUtils.isEmpty(subUserName)) {
-                                    i++;
-                                    continue;
-                                }
-
-                                if (!subUserName.equals(userName)) {
-                                    i++;
-                                    continue;
-                                }
-
-                                //2.  自评 + 点赞
-                                LOGGER.info("ABA comment {}-{}", user.getUsername(), goal.getUserName());
-                                //自评， 回复+点赞
-                                //先不管时间
-                                SpiderQueryContentNode subLikeNode = new SpiderQueryContentNode();
-                                subLikeNode.setContentXPath(String.format(Common.COMMENT_SUB_LIKE, index, i));
-                                handlerService.like(goal, user, subLikeNode);
-                                //回复
-                                SpiderInputClickNode subCommentReplayNode = new SpiderInputClickNode();
-                                subCommentReplayNode.setTriggerXPath(String.format(Common.COMMENT_SUB_COMMENT, index, i));
-                                subCommentReplayNode.setClickXPath(String.format(Common.COMMENT_SUB_COMMENT_SUBMIT, index, i));
-                                subCommentReplayNode.setContentXPath(String.format(Common.COMMENT_SUB_COMMENT_INPUT, index, i));
-                                subCommentReplayNode.setContent(commentPoolService.queryCommentWithInternalComment(goal, topic));
-                                handlerService.comment(goal, user, subCommentReplayNode);
-                                hasProcessId.add(subCommentId);
-                                i++;
-                            }
-                        //}
-                        index++;
-                        LOGGER.info("find comment not match : {}", commentId);
-                    }
+                if(!isFirst) {
+                    LOGGER.info("switch user:{}", user.getUsername());
+                    //切换用户
+                    handlerService.logout(user);
                 }
 
+                //登录
+                handlerService.login(user);
+                List<MultiGoal> goalList = goalPoolService.getMulti();
+                for(MultiGoal goal : goalList) {
+                    processMultiGoal(goal, user);
+                }
             }catch (Throwable e){
                 LOGGER.error("run is error", e);
             }
         }
 
         handlerService.close();
+    }
+
+    /**
+     * user处理goal
+     * @param goal
+     * @param user
+     */
+    private void processMultiGoal(MultiGoal goal, User user) {
+
+        String userName = goal.getUserName();
+
+        //2.打开连接
+        String curUserName = handlerService.openUrlAndGetUser(goal, user, new SpiderQueryContentNode().setContentXPath(Common.FULL_COMMENT_USERNAME));
+        LOGGER.info("start comment : {}-{}", userName, curUserName);
+        if (StringUtils.isEmpty(userName)) {
+            LOGGER.error("open goal url fail {}-{}", GsonUtil.toJson(goal), user.getUsername());
+            return;
+        }
+
+        String topic = handlerService.getCommentId(new SpiderQueryContentNode().setContentXPath(Common.SINA_TOPIC_MESSAGE));
+        processTopic(goal, user, topic);
+        processComment(goal, user,topic);
+    }
+
+    /**
+     * user处理goal的评论
+     * @param user
+     * @param goal
+     * @param topic
+     */
+    private void processComment(MultiGoal goal, User user,String topic) {
+
+        for (int index=1; index < MAX_COMMENT_COUNT;) {
+
+            ToolUtil.sleep(500);
+            String commentId = handlerService.getCommentId(new SpiderQueryContentNode().setContentXPath(String.format(Common.COMMENT_TOTOLE_FLAG, index)).setKey(COMMENT_ID_KEY));
+
+            //还是没有找到，加载更多
+            if (StringUtils.isEmpty(commentId)) {
+                handlerService.clickWithScollBottom(new SpiderQueryContentNode().setContentXPath(Common.COMMENT_TOTAL_MORE));
+                continue;
+            }
+
+            //1. 获取首楼，判断是否自评
+            String firstUserName = handlerService.getCommentId(new SpiderQueryContentNode().setContentXPath(String.format(Common.COMMENT_FIRST_USERNAME, index)));
+            if (goal.getUserName().equals(firstUserName)) {//自评， 回复+点赞
+
+                LOGGER.info("self comment {}-{}", user.getUsername(), goal.getUserName());
+                handlerService.like(goal, user, new SpiderQueryContentNode().setContentXPath(String.format(Common.COMMENT_FIRST_LIKE, index)));
+                handlerService.comment(goal, user, new SpiderInputClickNode()
+                        .setTriggerXPath(String.format(Common.COMMENT_FIRST_COMMENT, index))
+                        .setClickXPath(String.format(Common.COMMENT_FIRST_COMMENT_SUBMIT, index))
+                        .setContentXPath(String.format(Common.COMMENT_FIRST_COMMENT_INPUT, index))
+                        .setContent(commentPoolService.queryCommentWithInternalComment(goal, topic)));
+            }
+
+            //楼中楼 回复+点赞
+            processSubComment(goal, user, topic, index);
+            index++;
+        }
+    }
+
+    /**
+     * user处理goal的index评论的子评论
+     * @param goal
+     * @param user
+     * @param topic
+     * @param index
+     */
+    private void processSubComment(MultiGoal goal, User user, String topic, int index) {
+
+        Set<String> hasProcessId = Sets.newHashSet();
+        for (int i = 1; i <= MAX_SUB_COMMONT_COUNT; ) {
+            String subCommentId = handlerService.getCommentId(new SpiderQueryContentNode()
+                    .setContentXPath(String.format(Common.COMMENT_SUB_TOTOLE_FLAG, index, i)).setKey(COMMENT_ID_KEY));
+
+            //查看更多
+            if (StringUtils.isEmpty(subCommentId)) {
+                //handlerService.click(new SpiderQueryContentNode().setContentXPath(String.format(Common.COMMENT_SUB_MORE, index, i)));
+                break; //不展开，因为调研感觉展开没有内容
+            }
+
+            if (hasProcessId.contains(subCommentId)) {
+                i++;
+                continue;
+            }
+
+            //1. 获取子评论姓名
+            String subUserName = handlerService.getCommentId(new SpiderQueryContentNode().setContentXPath(String.format(Common.COMMENT_SUB_USERNAME, index, i)));
+            if (!goal.getUserName().equals(subUserName)) {
+                i++;
+                continue;
+            }
+
+            //2.  自评 + 点赞
+            LOGGER.info("ABA comment {}-{}", user.getUsername(), goal.getUserName());
+            handlerService.like(goal, user, new SpiderQueryContentNode().setContentXPath(String.format(Common.COMMENT_SUB_LIKE, index, i)));
+            //回复
+            handlerService.comment(goal, user, new SpiderInputClickNode()
+                    .setTriggerXPath(String.format(Common.COMMENT_SUB_COMMENT, index, i))
+                    .setClickXPath(String.format(Common.COMMENT_SUB_COMMENT_SUBMIT, index, i))
+                    .setContentXPath(String.format(Common.COMMENT_SUB_COMMENT_INPUT, index, i))
+                    .setContent(commentPoolService.queryCommentWithInternalComment(goal, topic)));
+
+            hasProcessId.add(subCommentId);
+            i++;
+        }
+    }
+
+    /**
+     * user处理goal的消息
+     * @param user
+     * @param goal
+     * @param topic
+     */
+    private void processTopic(MultiGoal goal, User user, String topic) {
+
+        //关注
+        handlerService.attention(goal, user, new SpiderQueryContentNode().setContentXPath(Common.FULL_COMMENT_ATTENTION));
+        //点赞
+        handlerService.like(goal, user, new SpiderQueryContentNode().setContentXPath(Common.Full_LIKE));
+        //转发
+        handlerService.share(goal, user,
+                new SpiderInputClickNode().setTriggerXPath(Common.MESSAGE_SHARE_FLAG)
+                        .setClickXPath(Common.MESSAGE_SHARE_SUBMIT)
+                        .setContentXPath(Common.MESSAGE_SHARE_INPUT)
+                        .setContent(commentPoolService.queryCommentWithShare(goal, topic)));
+        //评论
+        handlerService.comment(goal, user,
+                new SpiderInputClickNode().setTriggerXPath(Common.MESSAGE_COMMENT_FLAG)
+                        .setClickXPath(Common.MESSAAGE_COMMENT_SUBMIT)
+                        .setContentXPath(Common.MESSAGE_COMMENT_INFPUT)
+                        .setContent(commentPoolService.queryCommentWithComment(goal, topic)));
     }
 }
