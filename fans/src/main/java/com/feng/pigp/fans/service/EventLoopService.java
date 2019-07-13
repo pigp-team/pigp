@@ -151,7 +151,7 @@ public class EventLoopService {
                         .setClickXPath(String.format(Common.COMMENT_FIRST_COMMENT_SUBMIT, index))
                         .setContentXPath(String.format(Common.COMMENT_FIRST_COMMENT_INPUT, index))
                         .setContent(commentPoolService.queryCommentWithInternalComment(goal, topic)));
-                commentCount.set(commentCount.get()+1);
+                commentCount.set(commentCount.get()!=null?commentCount.get():0+1);
             }
 
             //楼中楼 回复+点赞
@@ -218,7 +218,7 @@ public class EventLoopService {
                     .setClickXPath(String.format(Common.COMMENT_SUB_COMMENT_SUBMIT, index, i))
                     .setContentXPath(String.format(Common.COMMENT_SUB_COMMENT_INPUT, index, i))
                     .setContent(commentPoolService.queryCommentWithInternalComment(goal, topic)));
-            commentCount.set(commentCount.get()+1);
+            commentCount.set(commentCount.get()!=null?commentCount.get():0+1);
 
             hasProcessId.add(subCommentId);
             i++;
