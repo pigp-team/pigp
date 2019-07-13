@@ -1,16 +1,18 @@
 package com.feng.pigp.fans.service;
 
-import com.feng.pigp.fans.model.Goal;
 import com.feng.pigp.fans.model.MultiGoal;
 import com.feng.pigp.fans.model.SingletonGoal;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author feng
@@ -21,24 +23,31 @@ import java.util.Map;
 public class GoalPoolService {
 
     private static Logger LOGGER = LoggerFactory.getLogger(GoalPoolService.class);
-
-    private Map<String, Goal> user2Goal = Maps.newHashMap();
-    private List<Goal> goalList = Lists.newArrayList();
-
+    private static final String FILE = "goal.pwd";
+    private static final String USERNAMEFLAG = "#&#userName#^#=";
     private List<MultiGoal> multiGoals = Lists.newArrayList();
 
-    //可以提交任务
-    public synchronized boolean submitGoalTask(Goal goal){
+    @PostConstruct
+    public void init() throws IOException {
 
-        Goal temp = user2Goal.get(goal.getUserName());
-        if(temp==null){
-            goalList.add(goal);
-            user2Goal.put(goal.getUserName(), goal);
-            return true;
+        InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(FILE);
+        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+
+        String line = null;
+        String userName = null;
+        while((line=br.readLine())!=null){
+            if(line.contains(USERNAMEFLAG)){
+                userName = line.replace(USERNAMEFLAG, "");
+                continue;
+            }
+
+            MultiGoal goal = new MultiGoal();
+            goal.setUrl(line);
+            goal.setUserName(userName);
+            submitMulti(goal);
         }
 
-        temp.setNext(goal);
-        return true;
+        LOGGER.info("goal load finish :{}", multiGoals.size());
     }
 
     public synchronized List<SingletonGoal> getAllGaols() {

@@ -1,14 +1,18 @@
 package com.feng.pigp.fans.service;
 
-import com.feng.pigp.fans.model.Goal;
 import com.feng.pigp.fans.model.User;
 import com.google.common.collect.Lists;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author feng
@@ -24,8 +28,28 @@ public class UserPoolService {
      * 根据goal的指针获取下一个用户
      * @return
      */
+    private static final Logger LOGGER  = LoggerFactory.getLogger(UserPoolService.class);
+
     public static AtomicInteger index = new AtomicInteger(0);
     public List<User> userList = Lists.newArrayList();
+    private static final String File = "user.pwd";
+
+    @PostConstruct
+    public void init() throws IOException {
+
+        InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(File);
+        Properties properties = new Properties();
+        properties.load(inputStream);
+
+        for(Map.Entry<Object,Object> entry : properties.entrySet()){
+
+            User user = new User();
+            user.setUsername((String)entry.getKey());
+            user.setPwd((String)entry.getValue());
+            userList.add(user);
+        }
+        LOGGER.info("load user finish : {}", userList.size());
+    }
 
     public User getUser(){
 

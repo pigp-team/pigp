@@ -1,14 +1,10 @@
 package com.feng.pigp.fans.service;
 
 import com.feng.pigp.fans.common.Common;
-import com.feng.pigp.fans.model.Goal;
 import com.feng.pigp.fans.model.MultiGoal;
-import com.feng.pigp.fans.model.SingletonGoal;
 import com.feng.pigp.fans.model.User;
-import com.feng.pigp.fans.model.chrom.Node;
 import com.feng.pigp.fans.model.chrom.SpiderInputClickNode;
 import com.feng.pigp.fans.model.chrom.SpiderQueryContentNode;
-import com.feng.pigp.fans.model.chrom.SpiderSubElemNumNode;
 import com.feng.pigp.util.GsonUtil;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
@@ -16,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Set;
@@ -38,74 +33,6 @@ public class EventLoopService {
     private HandlerService handlerService;
     @Resource
     private CommentPoolService commentPoolService;
-
-    /**
-     * 为了避免账号的切换，登录上账号之后，该账号可以做所有的事情
-     */
-    public void singletonRun(){
-
-        try{
-
-            for(;;) {
-                //1. 获取用户
-                User user = userPoolService.getUser();
-                if (user == null) {
-                    LOGGER.error("event loop query user error");
-                    break;
-                }
-
-                //登录
-                handlerService.login(user);
-
-                //获取所有的任务
-                List<SingletonGoal> goalList = goalPoolService.getAllGaols();
-                for(SingletonGoal goal : goalList){
-
-                    /*if(goal.isFinished()){
-                        LOGGER.info("goal has finished", GsonUtil.toJson(goal));
-                    }*/
-
-                    //找该goal的用户,开始查找
-                    //chromHandlerService.inputAndClick(goal.getUserId());
-                    //进入该用户的首页
-                    //chromHandlerService.enterUserIndex(goal.getUserId());
-                    //处理该用户相关的操作
-                    SingletonGoal curGoal = goal;
-                    while(curGoal!=null){
-                        processOperation(curGoal, user, null);
-                        curGoal = (SingletonGoal) goal.getNext();
-                    }
-
-                    System.out.println("哈哈哈");
-
-                }
-
-            }
-        }catch (Throwable e){
-            LOGGER.error("event loop error", e);
-        }
-
-    }
-
-    private void processOperation(SingletonGoal goal, User user, Node node) {
-
-        switch (goal.getEventType()){
-            case LIKE:
-                handlerService.like(goal, user, node);
-                break;
-            case SHARE:
-                handlerService.share(goal, user, node);
-                break;
-            case ATTENTION:
-                handlerService.attention(goal, user, node);
-                break;
-            case COMMENT:
-                handlerService.comment(goal, user, node);
-                break;
-            default:
-                break;
-        }
-    }
 
 
     public void multiRun(){
@@ -129,7 +56,14 @@ public class EventLoopService {
                     //2.打开连接
                     SpiderQueryContentNode queryNode = new SpiderQueryContentNode();
                     queryNode.setContentXPath(Common.FULL_COMMENT_USERNAME);
-                    String userName = handlerService.openUrlAndGetUser(goal, user, queryNode); //用户名可以修改为目标人物，轻松实现自评和他评
+                    String userName = goal.getUserName();
+                    String curUserName = handlerService.openUrlAndGetUser(goal, user, queryNode); //用户名可以修改为目标人物，轻松实现自评和他评
+                    if(userName.equals(curUserName)){
+                        LOGGER.info("self common : {}", userName);
+                    }else{
+                        LOGGER.info("your common : {}-{}", userName, curUserName);
+                    }
+
                     SpiderQueryContentNode queryTopicNode = new SpiderQueryContentNode();
                     queryTopicNode.setContentXPath(Common.SINA_TOPIC_MESSAGE);
                     String topic = handlerService.getCommentId(queryTopicNode);

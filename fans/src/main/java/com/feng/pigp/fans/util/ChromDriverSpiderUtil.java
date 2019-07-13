@@ -69,7 +69,7 @@ public class ChromDriverSpiderUtil {
             //map.put("httpProxy", ip.getIp()+":"+ip.getPort());
             map.put("httpProxy", "58.218.200.223:30085");
             Proxy proxy = new Proxy(map);
-            options.setProxy(proxy);
+            //options.setProxy(proxy);
         /*}*/
 
         Map<String, Object> prefs = new HashMap<String, Object>();
