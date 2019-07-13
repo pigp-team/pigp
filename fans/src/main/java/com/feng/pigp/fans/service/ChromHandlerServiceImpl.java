@@ -118,6 +118,11 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
         //1. 点击的地址
         ChromDriverSpiderUtil.click(getWebDriver(), inputClickNode.getTriggerXPath());
         boolean success = ChromDriverSpiderUtil.inputAndClick(getWebDriver(), inputClickNode);
+
+        if(ChromDriverSpiderUtil.hasAlert(getWebDriver())){
+            ChromDriverSpiderUtil.closeAlert(getWebDriver());
+        }
+
         if(success) {
             goal.getMessageMetric().getCommentCount().increment();
             LOGGER.info("handler service comment success {}-{}-{}", user.getUsername(), goal.getUserName(), goal.getId());
@@ -145,6 +150,7 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
 
         SpiderQueryContentNode queryNode = (SpiderQueryContentNode)node;
         boolean success = ChromDriverSpiderUtil.click(getWebDriver(), queryNode.getContentXPath());
+
         if(success) {
             goal.getMessageMetric().getAttentionCount().increment();
             LOGGER.info("handler service attention success {}-{}-{}", user.getUsername(), goal.getUserName(), goal.getId());

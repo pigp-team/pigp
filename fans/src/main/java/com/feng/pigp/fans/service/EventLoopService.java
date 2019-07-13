@@ -46,20 +46,23 @@ public class EventLoopService {
 
         boolean isFirst = true;
         for(;;) {
+
+            User user = userPoolService.getUser();
+            if (user == null) {
+                LOGGER.error("event loop query user error");
+                break;
+            }
+            LOGGER.info("user : {} start work", user.getUsername());
+
             try {
                 //1. 获取用户
-                User user = userPoolService.getUser();
-                if (user == null) {
-                    LOGGER.error("event loop query user error");
-                    break;
-                }
-
                 if(!isFirst) {
                     LOGGER.info("switch user:{}", user.getUsername());
                     //切换用户
                     handlerService.logout(user);
                 }
 
+                isFirst = false;
                 //登录
                 handlerService.login(user);
                 List<MultiGoal> goalList = goalPoolService.getMulti();
@@ -67,7 +70,9 @@ public class EventLoopService {
                     processMultiGoal(goal, user);
                 }
             }catch (Throwable e){
-                LOGGER.error("run is error", e);
+                LOGGER.error("run is error : {}", user.getUsername());
+                isFirst = true;
+                handlerService.close();
             }
         }
 
@@ -104,6 +109,7 @@ public class EventLoopService {
      */
     private void processComment(MultiGoal goal, User user,String topic) {
 
+        int moreCount = 0;
         for (int index=1; index < MAX_COMMENT_COUNT;) {
 
             ToolUtil.sleep(500);
@@ -111,6 +117,10 @@ public class EventLoopService {
 
             //还是没有找到，加载更多
             if (StringUtils.isEmpty(commentId)) {
+                moreCount++;
+                if(moreCount >= 10){
+                    break;
+                }
                 handlerService.clickWithScollBottom(new SpiderQueryContentNode().setContentXPath(Common.COMMENT_TOTAL_MORE));
                 continue;
             }
@@ -121,6 +131,7 @@ public class EventLoopService {
 
                 LOGGER.info("self comment {}-{}", user.getUsername(), goal.getUserName());
                 handlerService.like(goal, user, new SpiderQueryContentNode().setContentXPath(String.format(Common.COMMENT_FIRST_LIKE, index)));
+
                 handlerService.comment(goal, user, new SpiderInputClickNode()
                         .setTriggerXPath(String.format(Common.COMMENT_FIRST_COMMENT, index))
                         .setClickXPath(String.format(Common.COMMENT_FIRST_COMMENT_SUBMIT, index))

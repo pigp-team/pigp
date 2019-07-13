@@ -68,4 +68,6 @@ public class Common {
     public static String COMMENT_SUB_COMMENT_SUBMIT = "//*[@id=\"Pl_Official_WeiboDetail__73\"]/div/div/div/div[4]/div/div[3]/div[2]/div/div/div[%s]/div[2]/div[4]/div/div[%s]/div/div[3]/div[3]/div/div/div[2]/div[1]/a";
     public static String SINA_TOPIC_MESSAGE = "//*[@id=\"Pl_Official_WeiboDetail__73\"]/div/div/div/div[1]/div[4]/div[4]/a[1]";
     public static String COMMENT_SUB_MORE = "//*[@id=\"Pl_Official_WeiboDetail__73\"]/div/div/div/div[4]/div/div[3]/div[2]/div/div/div[%s]/div[2]/div[4]/div/div[%s]/div/a";
+
+    public static String ATTENTION_ALERT_ERROR = "//*[@id=\"layer_15629958422301\"]";
 }

@@ -31,7 +31,7 @@ public class GoalPoolService {
     public void init() throws IOException {
 
         InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(FILE);
-        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, "utf-8"));
 
         String line = null;
         String userName = null;

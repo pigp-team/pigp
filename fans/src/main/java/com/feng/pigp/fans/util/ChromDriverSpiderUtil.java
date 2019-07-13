@@ -1,10 +1,10 @@
 package com.feng.pigp.fans.util;
 
+import com.feng.pigp.fans.exception.FansException;
 import com.feng.pigp.fans.model.ProxyIp;
 import com.feng.pigp.fans.model.chrom.SpiderInputClickNode;
 import com.feng.pigp.fans.model.chrom.SpiderLoginEventNode;
 import com.feng.pigp.fans.model.chrom.SpiderMatchClickNode;
-import com.feng.pigp.fans.service.ProxyService;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.*;
@@ -30,6 +30,8 @@ public class ChromDriverSpiderUtil {
     public static final String DRIVER_PATH = "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chromedriver.exe";
     public static final int LOADING_WAITING_TIME = 2000;
 
+    private static final int MAX_CLICK_ERR_COUNT = 5;
+    private static ThreadLocal<Integer> clickCount = new ThreadLocal<>(); //memoery leak
 
     public static void openUrl(WebDriver driver, String url){
         try {
@@ -37,6 +39,27 @@ public class ChromDriverSpiderUtil {
             Thread.sleep(1000);
         }catch (Exception e){
             LOGGER.error("open url error", e);
+        }
+    }
+
+    public static void internalClick(WebElement element){
+
+        try{
+            element.click();
+            clickCount.set(0);
+        }catch (Exception e){
+            LOGGER.error("click error");
+
+            if(clickCount.get()==null){
+                clickCount.set(0);
+            }
+
+            if(clickCount.get()+1 > MAX_CLICK_ERR_COUNT){
+                clickCount.set(0);
+                throw new FansException("click error");
+            }
+
+            clickCount.set(clickCount.get()+1);
         }
     }
 
@@ -96,7 +119,7 @@ public class ChromDriverSpiderUtil {
             WebElement webElement = webDriver.findElement(By.xpath(node.getContentXPath()));
             webElement.sendKeys(node.getContent());
             Thread.sleep(500);
-            ChromDriverSpiderUtil.click(webDriver, node.getClickXPath());
+            click(webDriver, node.getClickXPath());
             return true;
         } catch (Exception e) {
             LOGGER.error("inputAndClick error", e);
@@ -132,6 +155,17 @@ public class ChromDriverSpiderUtil {
         } catch (Exception e) {
             LOGGER.error("login error", e);
         }
+    }
+
+    public static boolean hasAlert(WebDriver driver){
+        try {
+            driver.switchTo().alert();
+            return true;
+        }catch (NoAlertPresentException e){
+            //noting todo
+        }
+
+        return false;
     }
 
     /**
@@ -230,7 +264,7 @@ public class ChromDriverSpiderUtil {
                 JavascriptExecutor js = (JavascriptExecutor) driver;
                 js.executeScript("arguments[0].scrollIntoView()", clickElement);
             }
-            clickElement.click();
+            internalClick(clickElement);
             //休眠2s等待页面加载
             Thread.sleep(LOADING_WAITING_TIME);
             return true;
@@ -278,7 +312,7 @@ public class ChromDriverSpiderUtil {
                 JavascriptExecutor js = (JavascriptExecutor) driver;
                 js.executeScript("arguments[0].scrollIntoView()", clickElement);
             }
-            clickElement.click();
+            internalClick(clickElement);
             //休眠2s等待页面加载
             Thread.sleep(LOADING_WAITING_TIME);
             return true;
@@ -422,5 +456,15 @@ public class ChromDriverSpiderUtil {
         }
 
         return -1;
+    }
+
+    public static void closeAlert(WebDriver webDriver) {
+
+        webDriver.switchTo().alert().accept();
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

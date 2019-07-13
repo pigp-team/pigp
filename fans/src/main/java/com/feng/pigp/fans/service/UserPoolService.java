@@ -45,6 +45,9 @@ public class UserPoolService {
 
             User user = new User();
             user.setUsername((String)entry.getKey());
+            if(user.getUsername().startsWith("#")){
+                continue;
+            }
             user.setPwd((String)entry.getValue());
             userList.add(user);
         }
