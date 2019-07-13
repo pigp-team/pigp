@@ -82,6 +82,8 @@ public class ChromDriverSpiderUtil {
         ChromeOptions options = new ChromeOptions();
         //设置浏览器最大化
         options.addArguments("--start-maximized");
+        //options.addArguments("--headless");
+        //options.addArguments("--disable-gpu");
         //options.addArguments("--start-fullscreen");
         //设置ssl证书支持
         options.setCapability("acceptSslCerts", true);

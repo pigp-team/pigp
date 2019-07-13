@@ -35,6 +35,8 @@ public class UserPoolService {
     public static AtomicInteger index = new AtomicInteger(0);
     public List<User> userList = Lists.newArrayList();
     private static final String File = "user.pwd";
+    boolean isInit = false;
+    public List<List<User>> batchList = Lists.newArrayList();
 
     @PostConstruct
     public void init() throws IOException {
@@ -55,6 +57,19 @@ public class UserPoolService {
             userList.add(user);
         }
         LOGGER.info("load user finish : {}", userList.size());
+    }
+
+    public List<List<User>> getUser(int size){
+
+        List<List<User>> result = Lists.newArrayList();
+        for(int i=0; i<size; i++){
+            result.add(Lists.newArrayList());
+        }
+
+        for(int i=0; i<userList.size(); i++){
+            result.get(i%size).add(userList.get(i));
+        }
+        return result;
     }
 
     public User getUser(){

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * @author feng
@@ -22,7 +23,7 @@ import java.util.Set;
  * @since 1.0
  */
 @Service
-public class EventLoopService {
+public class EventLoopService{
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EventLoopService.class);
     private static final int MAX_COMMENT_COUNT = 50;
@@ -44,15 +45,55 @@ public class EventLoopService {
     private CommentPoolService commentPoolService;
 
 
+    public void runBatch(int batchSize){
+
+        final CountDownLatch countLatch = new CountDownLatch(batchSize);
+        List<List<User>> list = userPoolService.getUser(batchSize);
+        for(List<User> user : list){
+
+            new Thread(new Task(goalPoolService, handlerService, commentPoolService, this, user, countLatch)).start();
+        }
+
+        try {
+            countLatch.await();
+        } catch (InterruptedException e) {
+            LOGGER.error("countdown error", e);
+        }
+
+    }
+
+    public static class Task implements Runnable{
+        private GoalPoolService goalPoolService;
+        private HandlerService handlerService;
+        private CommentPoolService commentPoolService;
+        private EventLoopService eventLoopService;
+        private List<User> userList;
+        private CountDownLatch countLatch;
+
+        public Task(GoalPoolService goalPoolService, HandlerService handlerService, CommentPoolService commentPoolService, EventLoopService eventLoopService,
+                    List<User> userList, CountDownLatch countLatch) {
+            this.goalPoolService = goalPoolService;
+            this.handlerService = handlerService;
+            this.commentPoolService = commentPoolService;
+            this.eventLoopService = eventLoopService;
+            this.userList = userList;
+            this.countLatch = countLatch;
+        }
+
+        @Override
+        public void run() {
+            this.eventLoopService.run(userList);
+            countLatch.countDown();
+        }
+    }
     /**
      * 主流程方法
      */
-    public void run(){
+    public void run(List<User> userList){
 
         boolean isFirst = true;
-        for(;;) {
+        for(User user : userList) {
 
-            User user = userPoolService.getUser();
             if (user == null) {
                 LOGGER.error("event loop query user error");
                 break;
