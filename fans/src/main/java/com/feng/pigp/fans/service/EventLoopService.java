@@ -56,6 +56,7 @@ public class EventLoopService {
                     //2.打开连接
                     SpiderQueryContentNode queryNode = new SpiderQueryContentNode();
                     queryNode.setContentXPath(Common.FULL_COMMENT_USERNAME);
+
                     String userName = goal.getUserName();
                     String curUserName = handlerService.openUrlAndGetUser(goal, user, queryNode); //用户名可以修改为目标人物，轻松实现自评和他评
                     if(userName.equals(curUserName)){
@@ -71,9 +72,6 @@ public class EventLoopService {
                         LOGGER.error("open goal url fail {}-{}", GsonUtil.toJson(goal), user.getUsername());
                         continue;
                     }
-
-                    //更新目标用户的信息
-                    goal.setUserName(userName);
 
                     //关注
                     SpiderQueryContentNode attentionNode = new SpiderQueryContentNode();
