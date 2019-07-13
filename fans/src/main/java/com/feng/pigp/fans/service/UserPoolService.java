@@ -7,8 +7,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -38,17 +40,18 @@ public class UserPoolService {
     public void init() throws IOException {
 
         InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(File);
-        Properties properties = new Properties();
-        properties.load(inputStream);
+        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, "utf-8"));
 
-        for(Map.Entry<Object,Object> entry : properties.entrySet()){
-
-            User user = new User();
-            user.setUsername((String)entry.getKey());
-            if(user.getUsername().startsWith("#")){
+        String line = null;
+        while((line=br.readLine())!=null){
+            int index = line.indexOf("=");
+            if(index<0){
                 continue;
             }
-            user.setPwd((String)entry.getValue());
+
+            User user = new User();
+            user.setUsername(line.substring(0, index));
+            user.setPwd(line.substring(index+1, line.length()));
             userList.add(user);
         }
         LOGGER.info("load user finish : {}", userList.size());

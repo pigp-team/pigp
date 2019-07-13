@@ -25,7 +25,7 @@ import java.util.Set;
 public class EventLoopService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EventLoopService.class);
-    private static final int MAX_COMMENT_COUNT = 100;
+    private static final int MAX_COMMENT_COUNT = 50;
     private static final int MAX_SUB_COMMONT_COUNT = 20;
     private static final long MAX_COMMENT_INTERVAL = 5*60*1000;
     private static final int MAX_COMMENT_INTERVAL_COUNT = 15;
@@ -151,7 +151,7 @@ public class EventLoopService {
                         .setClickXPath(String.format(Common.COMMENT_FIRST_COMMENT_SUBMIT, index))
                         .setContentXPath(String.format(Common.COMMENT_FIRST_COMMENT_INPUT, index))
                         .setContent(commentPoolService.queryCommentWithInternalComment(goal, topic)));
-                commentCount.set(commentCount.get()!=null?commentCount.get():0+1);
+                commentCount.set((commentCount.get()!=null?commentCount.get():0)+1);
             }
 
             //楼中楼 回复+点赞
@@ -218,7 +218,7 @@ public class EventLoopService {
                     .setClickXPath(String.format(Common.COMMENT_SUB_COMMENT_SUBMIT, index, i))
                     .setContentXPath(String.format(Common.COMMENT_SUB_COMMENT_INPUT, index, i))
                     .setContent(commentPoolService.queryCommentWithInternalComment(goal, topic)));
-            commentCount.set(commentCount.get()!=null?commentCount.get():0+1);
+            commentCount.set((commentCount.get()!=null?commentCount.get():0)+1);
 
             hasProcessId.add(subCommentId);
             i++;

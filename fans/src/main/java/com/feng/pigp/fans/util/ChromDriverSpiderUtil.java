@@ -95,7 +95,7 @@ public class ChromDriverSpiderUtil {
             LOGGER.info("use proxy :{}-{}", ip.getIp(), ip.getPort());*/
             Map<String, String> map = Maps.newHashMap();
             //map.put("httpProxy", ip.getIp()+":"+ip.getPort());
-            map.put("httpProxy", "58.218.200.223:30085");
+            map.put("httpProxy", "94.23.154.55:3128");
             Proxy proxy = new Proxy(map);
             options.setProxy(proxy);
         /*}*/
