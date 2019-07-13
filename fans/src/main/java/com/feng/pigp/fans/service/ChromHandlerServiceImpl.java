@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ChromHandlerServiceImpl implements HandlerService<Node> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ChromHandlerServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger("fans");
 
     private static final int MAX_RETRY = 5;
     private ThreadLocal<WebDriver> threadLocal = new ThreadLocal<WebDriver>();

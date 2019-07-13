@@ -1,10 +1,11 @@
 package com.feng.pigp.fans.util;
 
+import com.feng.pigp.fans.common.Common;
 import com.feng.pigp.fans.exception.FansException;
-import com.feng.pigp.fans.model.ProxyIp;
 import com.feng.pigp.fans.model.chrom.SpiderInputClickNode;
 import com.feng.pigp.fans.model.chrom.SpiderLoginEventNode;
 import com.feng.pigp.fans.model.chrom.SpiderMatchClickNode;
+import com.feng.pigp.fans.service.VerificationCodeService;
 import com.google.common.collect.Maps;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -31,7 +32,7 @@ public class ChromDriverSpiderUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ChromDriverSpiderUtil.class);
     public static final String DRIVER_PATH = "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chromedriver.exe";
-    private static final String SAVE_PATH =  "D:\\imag\\";
+    private static final String SAVE_PATH =  "D:\\img\\";
     public static final int LOADING_WAITING_TIME = 2000;
 
     private static final int MAX_CLICK_ERR_COUNT = 5;
@@ -96,7 +97,7 @@ public class ChromDriverSpiderUtil {
             //map.put("httpProxy", ip.getIp()+":"+ip.getPort());
             map.put("httpProxy", "58.218.200.223:30085");
             Proxy proxy = new Proxy(map);
-            //options.setProxy(proxy);
+            options.setProxy(proxy);
         /*}*/
 
         Map<String, Object> prefs = new HashMap<String, Object>();
@@ -154,14 +155,15 @@ public class ChromDriverSpiderUtil {
             pwdElement.sendKeys(eventNode.getPasswd());
             if(find(driver, eventNode.getValidateCodeXPath())){
                 //验证码存在
-                for(int i=0; i<10; i++) {
+                for(int i=0; i<5; i++) {
+                    ToolUtil.sleep(500);
                     String savePath = SAVE_PATH + System.currentTimeMillis() + ".png";
                     WebElement validate = driver.findElement(By.xpath(eventNode.getValidateCodeXPath()));
                     screenShot(driver, savePath, validate.getRect().getX(), validate.getRect().getY(),
                             Integer.parseInt(validate.getAttribute("width")), Integer.parseInt(validate.getAttribute("height")));
                     //获取解析的结果
                     File file = new File(savePath);
-                    String code = "";
+                    String code = VerificationCodeService.distinguishCode(ToolUtil.getBytes(file));
                     //将原图片名称修改为正确解析的名称
                     if (StringUtils.isEmpty(code)) {
                         LOGGER.error("code error");
@@ -169,13 +171,25 @@ public class ChromDriverSpiderUtil {
                         click(driver, eventNode.getValidateCodeXPath());
                         continue;
                     }
+
+                    WebElement codeInput = driver.findElement(By.xpath(Common.VALIDATE_CODE_INPUT));
+                    codeInput.clear();
+                    codeInput.sendKeys(code);
+
+                    click(driver, eventNode.getLoginXPath());
+                    if(find(driver, eventNode.getValidateCodeXPath())){
+                        click(driver, eventNode.getValidateCodeXPath());
+                        file.delete();
+                        continue;
+                    }
+
                     //设置验证码
-                    File newfile = new File(code);
+                    File newfile = new File(SAVE_PATH+code+".png");
                     file.renameTo(newfile);
-                    break;
+                    return;
                 }
             }
-            Thread.sleep(100);
+
             click(driver, eventNode.getLoginXPath());
             LOGGER.info("{} : login success");
             return;

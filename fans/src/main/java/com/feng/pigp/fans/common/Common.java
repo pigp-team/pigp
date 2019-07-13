@@ -72,4 +72,5 @@ public class Common {
     public static String ATTENTION_ALERT_ERROR = "//*[@id=\"layer_15629958422301\"]";
     public static String VALIDATE_CODE_IMAGE = "//*[@id=\"pl_login_form\"]/div/div[3]/div[3]/a/img";
     public static String VALIDATE_CODE_INPUT = "//*[@id=\"pl_login_form\"]/div/div[3]/div[3]/div/input";
+    public static String COMMENT_ERROR_LIMIT = "//*[@id=\"layer_15630078965111\"]/div[2]/div[4]/a";
 }

@@ -27,7 +27,12 @@ public class EventLoopService {
     private static final Logger LOGGER = LoggerFactory.getLogger(EventLoopService.class);
     private static final int MAX_COMMENT_COUNT = 100;
     private static final int MAX_SUB_COMMONT_COUNT = 20;
+    private static final long MAX_COMMENT_INTERVAL = 5*60*1000;
+    private static final int MAX_COMMENT_INTERVAL_COUNT = 15;
     private static final String COMMENT_ID_KEY = "comment_id";
+
+    ThreadLocal<Long> isComment = new ThreadLocal<>();
+    ThreadLocal<Integer> commentCount = new ThreadLocal<>();
 
     @Resource
     private GoalPoolService goalPoolService;
@@ -70,7 +75,7 @@ public class EventLoopService {
                     processMultiGoal(goal, user);
                 }
             }catch (Throwable e){
-                LOGGER.error("run is error : {}", user.getUsername());
+                LOGGER.error("run is error : {}", user.getUsername(), e);
                 isFirst = true;
                 handlerService.close();
             }
@@ -112,6 +117,7 @@ public class EventLoopService {
         int moreCount = 0;
         for (int index=1; index < MAX_COMMENT_COUNT;) {
 
+            updateCommentLimit();
             ToolUtil.sleep(500);
             String commentId = handlerService.getCommentId(new SpiderQueryContentNode().setContentXPath(String.format(Common.COMMENT_TOTOLE_FLAG, index)).setKey(COMMENT_ID_KEY));
 
@@ -130,19 +136,36 @@ public class EventLoopService {
             if (goal.getUserName().equals(firstUserName)) {//自评， 回复+点赞
 
                 LOGGER.info("self comment {}-{}", user.getUsername(), goal.getUserName());
-                handlerService.like(goal, user, new SpiderQueryContentNode().setContentXPath(String.format(Common.COMMENT_FIRST_LIKE, index)));
+                boolean likeSuccess = handlerService.like(goal, user, new SpiderQueryContentNode().setContentXPath(String.format(Common.COMMENT_FIRST_LIKE, index)));
+                if(!likeSuccess){
+                    index++;
+                    continue;
+                }
 
+                if(isComment.get()!=null && isComment.get()-System.currentTimeMillis()<=MAX_COMMENT_INTERVAL){
+                    index++;
+                    continue;
+                }
                 handlerService.comment(goal, user, new SpiderInputClickNode()
                         .setTriggerXPath(String.format(Common.COMMENT_FIRST_COMMENT, index))
                         .setClickXPath(String.format(Common.COMMENT_FIRST_COMMENT_SUBMIT, index))
                         .setContentXPath(String.format(Common.COMMENT_FIRST_COMMENT_INPUT, index))
                         .setContent(commentPoolService.queryCommentWithInternalComment(goal, topic)));
+                commentCount.set(commentCount.get()+1);
             }
 
             //楼中楼 回复+点赞
             processSubComment(goal, user, topic, index);
             index++;
         }
+    }
+
+    private void updateCommentLimit() {
+
+       if(commentCount.get()!=null && commentCount.get()>MAX_COMMENT_INTERVAL_COUNT){
+           commentCount.set(0);
+           isComment.set(System.currentTimeMillis());
+       }
     }
 
     /**
@@ -179,13 +202,23 @@ public class EventLoopService {
 
             //2.  自评 + 点赞
             LOGGER.info("ABA comment {}-{}", user.getUsername(), goal.getUserName());
-            handlerService.like(goal, user, new SpiderQueryContentNode().setContentXPath(String.format(Common.COMMENT_SUB_LIKE, index, i)));
+            boolean likeSuccess = handlerService.like(goal, user, new SpiderQueryContentNode().setContentXPath(String.format(Common.COMMENT_SUB_LIKE, index, i)));
+            if(!likeSuccess){
+                i++;
+                continue;
+            }
             //回复
+            if(isComment.get()!=null && isComment.get()-System.currentTimeMillis()<=MAX_COMMENT_INTERVAL){
+                i++;
+                continue;
+            }
+
             handlerService.comment(goal, user, new SpiderInputClickNode()
                     .setTriggerXPath(String.format(Common.COMMENT_SUB_COMMENT, index, i))
                     .setClickXPath(String.format(Common.COMMENT_SUB_COMMENT_SUBMIT, index, i))
                     .setContentXPath(String.format(Common.COMMENT_SUB_COMMENT_INPUT, index, i))
                     .setContent(commentPoolService.queryCommentWithInternalComment(goal, topic)));
+            commentCount.set(commentCount.get()+1);
 
             hasProcessId.add(subCommentId);
             i++;
