@@ -99,7 +99,7 @@ public class ChromDriverSpiderUtil {
             //map.put("httpProxy", ip.getIp()+":"+ip.getPort());
             map.put("httpProxy", "94.23.154.55:3128");
             Proxy proxy = new Proxy(map);
-            options.setProxy(proxy);
+            //options.setProxy(proxy);
         /*}*/
 
         Map<String, Object> prefs = new HashMap<String, Object>();
@@ -139,7 +139,7 @@ public class ChromDriverSpiderUtil {
      * @param driver
      * @param eventNode
      */
-    public static void login(WebDriver driver, SpiderLoginEventNode eventNode){
+    public static boolean login(WebDriver driver, SpiderLoginEventNode eventNode){
 
         try {
             Thread.sleep(1000);
@@ -157,7 +157,7 @@ public class ChromDriverSpiderUtil {
             pwdElement.sendKeys(eventNode.getPasswd());
             if(find(driver, eventNode.getValidateCodeXPath())){
                 //验证码存在
-                for(int i=0; i<5; i++) {
+                for(int i=0; i<2; i++) {
                     ToolUtil.sleep(500);
                     String savePath = SAVE_PATH + System.currentTimeMillis() + ".png";
                     WebElement validate = driver.findElement(By.xpath(eventNode.getValidateCodeXPath()));
@@ -188,16 +188,18 @@ public class ChromDriverSpiderUtil {
                     //设置验证码
                     File newfile = new File(SAVE_PATH+code+".png");
                     file.renameTo(newfile);
-                    return;
+                    return true;
                 }
             }
 
             click(driver, eventNode.getLoginXPath());
             LOGGER.info("{} : login success");
-            return;
+            return true;
         } catch (Exception e) {
             LOGGER.error("login error", e);
         }
+
+        return false;
     }
 
     public static boolean hasAlert(WebDriver driver){

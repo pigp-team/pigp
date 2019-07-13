@@ -7,6 +7,7 @@ import com.feng.pigp.fans.model.MultiGoal;
 import com.feng.pigp.fans.model.User;
 import com.feng.pigp.fans.model.chrom.*;
 import com.feng.pigp.fans.util.ChromDriverSpiderUtil;
+import com.feng.pigp.fans.util.ToolUtil;
 import com.feng.pigp.util.GsonUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.WebDriver;
@@ -24,7 +25,7 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("fans");
 
-    private static final int MAX_RETRY = 5;
+    private static final int MAX_RETRY = 3;
     private ThreadLocal<WebDriver> threadLocal = new ThreadLocal<WebDriver>();
 
     @Override
@@ -47,7 +48,10 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
             loginWithOutLogout(user, 1);
         }
         SpiderLoginEventNode node = initLoginEventNode(user);
-        ChromDriverSpiderUtil.login(getWebDriver(), node);
+        boolean isSuccess = ChromDriverSpiderUtil.login(getWebDriver(), node);
+        if(!isSuccess){
+            ToolUtil.sleep(1000);
+        }
 
         //确认是否已经登录成功
         if(!isLogin()){

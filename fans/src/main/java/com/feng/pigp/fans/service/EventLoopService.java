@@ -26,10 +26,10 @@ import java.util.concurrent.CountDownLatch;
 public class EventLoopService{
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EventLoopService.class);
-    private static final int MAX_COMMENT_COUNT = 50;
-    private static final int MAX_SUB_COMMONT_COUNT = 20;
+    private static final int MAX_COMMENT_COUNT = 10;
+    private static final int MAX_SUB_COMMONT_COUNT = 5;
     private static final long MAX_COMMENT_INTERVAL = 5*60*1000;
-    private static final int MAX_COMMENT_INTERVAL_COUNT = 15;
+    private static final int MAX_COMMENT_INTERVAL_COUNT = 10;
     private static final String COMMENT_ID_KEY = "comment_id";
 
     ThreadLocal<Long> isComment = new ThreadLocal<>();
@@ -282,11 +282,11 @@ public class EventLoopService{
         //点赞
         handlerService.like(goal, user, new SpiderQueryContentNode().setContentXPath(Common.Full_LIKE));
         //转发
-        handlerService.share(goal, user,
+        /*handlerService.share(goal, user,
                 new SpiderInputClickNode().setTriggerXPath(Common.MESSAGE_SHARE_FLAG)
                         .setClickXPath(Common.MESSAGE_SHARE_SUBMIT)
                         .setContentXPath(Common.MESSAGE_SHARE_INPUT)
-                        .setContent(commentPoolService.queryCommentWithShare(goal, topic)));
+                        .setContent(commentPoolService.queryCommentWithShare(goal, topic)));*/
         //评论
         handlerService.comment(goal, user,
                 new SpiderInputClickNode().setTriggerXPath(Common.MESSAGE_COMMENT_FLAG)
