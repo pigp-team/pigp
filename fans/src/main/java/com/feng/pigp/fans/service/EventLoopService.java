@@ -249,5 +249,6 @@ public class EventLoopService {
                         .setClickXPath(Common.MESSAAGE_COMMENT_SUBMIT)
                         .setContentXPath(Common.MESSAGE_COMMENT_INFPUT)
                         .setContent(commentPoolService.queryCommentWithComment(goal, topic)));
+        commentCount.set((commentCount.get()!=null?commentCount.get():0)+1);
     }
 }
