@@ -1,6 +1,7 @@
 package com.feng.pigp.fans.service;
 
 import com.feng.pigp.fans.common.Common;
+import com.feng.pigp.fans.exception.AccountErrorException;
 import com.feng.pigp.fans.model.MultiGoal;
 import com.feng.pigp.fans.model.User;
 import com.feng.pigp.fans.model.chrom.SpiderInputClickNode;
@@ -115,10 +116,12 @@ public class EventLoopService{
                 for(MultiGoal goal : goalList) {
                     processMultiGoal(goal, user);
                 }
-            }catch (Throwable e){
-                LOGGER.error("run is error : {}", user.getUsername(), e);
-                isFirst = true;
-                handlerService.close();
+            }catch (AccountErrorException e){
+              //切换账号
+                continue;
+            } catch (Throwable e){
+                LOGGER.error("run is error account is error : {}", user.getUsername(), e);
+                handlerService.refresh();
             }
         }
 

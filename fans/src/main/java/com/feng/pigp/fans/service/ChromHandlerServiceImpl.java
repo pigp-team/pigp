@@ -1,6 +1,7 @@
 package com.feng.pigp.fans.service;
 
 import com.feng.pigp.fans.common.Common;
+import com.feng.pigp.fans.exception.AccountErrorException;
 import com.feng.pigp.fans.exception.FansException;
 import com.feng.pigp.fans.model.Goal;
 import com.feng.pigp.fans.model.MultiGoal;
@@ -23,9 +24,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class ChromHandlerServiceImpl implements HandlerService<Node> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger("fans");
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChromHandlerServiceImpl.class);
 
     private static final int MAX_RETRY = 3;
+    private static final String ERROR_TEXT = "异常";
     private ThreadLocal<WebDriver> threadLocal = new ThreadLocal<WebDriver>();
 
     @Override
@@ -36,27 +38,58 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
             logout(user);
         }
 
-        loginWithOutLogout(user, 1);
+        loginWithOutLogout(user,null, 1);
         LOGGER.info("handler service login success {}", user.getUsername());
         return true;
     }
 
-    private void loginWithOutLogout(User user, int retryNum) {
+    private boolean login(User user, String url) {
+
+        LOGGER.info("handler service login start {}", user.getUsername());
+        if(threadLocal.get()!=null){
+            logout(user);
+        }
+
+        loginWithOutLogout(user, url, 1);
+        LOGGER.info("handler service login success {}", user.getUsername());
+        return true;
+    }
+
+    private void loginWithOutLogout(User user, String openUrl, int retryNum) {
 
         if(retryNum>=MAX_RETRY){
-            close();
-            loginWithOutLogout(user, 1);
+            //close();
+            loginWithOutLogout(user, openUrl, 1);
         }
-        SpiderLoginEventNode node = initLoginEventNode(user);
+        SpiderLoginEventNode node = initLoginEventNode(user, openUrl);
+        //ChromDriverSpiderUtil.click(getWebDriver(), Common.INTERNALE_SINA_LOGIN_URL);
+        //ChromDriverSpiderUtil.wait(getWebDriver(), node.getUserNameXPath());
         boolean isSuccess = ChromDriverSpiderUtil.login(getWebDriver(), node);
-        if(!isSuccess){
-            ToolUtil.sleep(1000);
-        }
 
+        if(isErrorUser()){
+            LOGGER.error("account err : {}", user.getUsername());
+            throw new AccountErrorException("account user error");
+        }
         //确认是否已经登录成功
         if(!isLogin()){
-            loginWithOutLogout(user, ++retryNum);
+            loginWithOutLogout(user,openUrl, ++retryNum);
         }
+    }
+
+    private boolean isErrorUser() {
+
+        String content = ChromDriverSpiderUtil.getContent(getWebDriver(), Common.ACCOUNT_ALL_ERROR);
+        if(StringUtils.isEmpty(content)){
+            return false;
+
+        }
+
+        LOGGER.error("err message : {}", content);
+        if(content.contains(ERROR_TEXT)){
+            return true;
+        }
+
+        return true;
     }
 
     @Override
@@ -155,6 +188,13 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
         SpiderQueryContentNode queryNode = (SpiderQueryContentNode)node;
         boolean success = ChromDriverSpiderUtil.click(getWebDriver(), queryNode.getContentXPath());
 
+        //判断是否为异常账号：
+        if(ERROR_TEXT.equals(ChromDriverSpiderUtil.getContentWithKey(getWebDriver(), Common.ATTENTION_ALERT_ERROR,null))){
+            LOGGER.error("account unnormal :{}", user.getUsername());
+            //点击取消
+            ChromDriverSpiderUtil.click(getWebDriver(), Common.ATTENTION_ALERT_CLOSE);
+            throw new AccountErrorException("account error");
+        }
         if(success) {
             goal.getMessageMetric().getAttentionCount().increment();
             LOGGER.info("handler service attention success {}-{}-{}", user.getUsername(), goal.getUserName(), goal.getId());
@@ -191,21 +231,19 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
     @Override
     public String openUrlAndGetUser(Goal goal, User user, Node node) {
 
-        for(int i=0; i<10; i++) {
+        try {
+
             LOGGER.info("handler service open goal url  : {}-{}", goal.getId(), user.getUsername());
-            MultiGoal multiGoal = (MultiGoal)goal;
+            MultiGoal multiGoal = (MultiGoal) goal;
             SpiderQueryContentNode queryNode = (SpiderQueryContentNode) node;
             ChromDriverSpiderUtil.openUrl(getWebDriver(), multiGoal.getUrl());
             String userName = ChromDriverSpiderUtil.getContent(getWebDriver(), queryNode.getContentXPath());
-            if(StringUtils.isNotEmpty(userName)){
+            if (StringUtils.isNotEmpty(userName)) {
                 LOGGER.info("handler service open goal url success  : {}-{}-{}", goal.getId(), user.getUsername(), userName);
                 return userName;
             }
-            try {
-                Thread.sleep(1000*i);
-            } catch (InterruptedException e) {
-                LOGGER.error("login error", e);
-            }
+        }catch (Exception e){
+            LOGGER.debug("open url and get error", e);
         }
         return null;
     }
@@ -283,6 +321,11 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
         threadLocal.remove();
     }
 
+    @Override
+    public void refresh() {
+        ChromDriverSpiderUtil.refresh(getWebDriver());
+    }
+
     private SpiderLoginEventNode fullInitLoginEventNode(User user) {
 
         if(user==null){
@@ -298,20 +341,24 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
         return node;
     }
 
-    private SpiderLoginEventNode initLoginEventNode(User user) {
+    private SpiderLoginEventNode initLoginEventNode(User user, String openUrl) {
 
         if(user==null){
             throw new FansException("user is null");
         }
 
         SpiderLoginEventNode node = new SpiderLoginEventNode();
-        node.setLoginURL(Common.SINA_URL);
-        node.setLoginXPath(Common.SINA_LOGIN_BUTTON);
+        node.setLoginURL(Common.INTERNALE_SINA_LOGIN_URL);
+        if(StringUtils.isNotEmpty(openUrl)) {
+            node.setLoginURL(openUrl);
+        }
+        node.setLoginXPath(Common.INTERNALE_SINA_LOGIN_BUTTON);
         node.setUserName(user.getUsername());
-        node.setUserNameXPath(Common.SINA_LOGIN_USERNAME);
+        node.setUserNameXPath(Common.INTERNALE_SINA_LOGIN_USERNAME);
         node.setPasswd(user.getPwd());
-        node.setPasswdXPath(Common.SINA_LOGIN_PWD);
-        node.setValidateCodeXPath(Common.VALIDATE_CODE_IMAGE);
+        node.setPasswdXPath(Common.INTERNALE_SINA_LOGIN_PWD);
+        node.setValidateCodeXPath(Common.INTERNALE_VALIDATE_CODE_IMAGE);
+        node.setValidateCodeInputXPath(Common.INTERNALE_VALIDATE_CODE_INPUT);
         return node;
     }
 
