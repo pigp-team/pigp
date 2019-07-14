@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.util.Random;
 
 /**
  * @author feng
@@ -13,6 +14,7 @@ import java.io.*;
 public class ToolUtil {
 
     private static Logger LOGGER = LoggerFactory.getLogger(ToolUtil.class);
+    private static Random RANDOM = new Random();
 
     public static void  sleep(int mill){
 
@@ -21,6 +23,13 @@ public class ToolUtil {
         } catch (InterruptedException e) {
             LOGGER.error("sleep error", e);
         }
+    }
+
+    public static boolean validateRandom(int value){
+
+        int temp = RANDOM.nextInt(100);
+        return temp<value;
+
     }
 
     public static byte[] getBytes(File file){

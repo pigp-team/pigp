@@ -322,6 +322,8 @@ public class EventLoopService{
                             .setClickXPath(Common.MESSAAGE_COMMENT_SUBMIT)
                             .setContentXPath(Common.MESSAGE_COMMENT_INFPUT)
                             .setContent(commentPoolService.queryCommentWithComment(goal, topic)));
+        }else{
+            handlerService.click(new SpiderQueryContentNode().setContentXPath(Common.MESSAGE_COMMENT_FLAG));
         }
     }
 }

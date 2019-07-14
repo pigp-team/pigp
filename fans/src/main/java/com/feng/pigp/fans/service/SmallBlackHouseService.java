@@ -4,6 +4,7 @@ import com.feng.pigp.fans.common.EventTypeEnum;
 import com.feng.pigp.fans.model.Goal;
 import com.feng.pigp.fans.model.MultiGoal;
 import com.feng.pigp.fans.model.User;
+import com.feng.pigp.fans.util.ToolUtil;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.springframework.stereotype.Service;
@@ -50,6 +51,10 @@ public class SmallBlackHouseService {
 
                 if(user.getMessageMetric().getCommentCount().intValue()>= SHARE_LIMIT){
                     blackHouseMap.put(user.getUsername()+event.getId(), System.currentTimeMillis());
+                    return true;
+                }
+
+                if(ToolUtil.validateRandom(70)){
                     return true;
                 }
 
