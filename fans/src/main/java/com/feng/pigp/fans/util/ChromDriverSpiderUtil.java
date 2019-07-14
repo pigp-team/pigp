@@ -6,12 +6,15 @@ import com.feng.pigp.fans.model.chrom.SpiderInputClickNode;
 import com.feng.pigp.fans.model.chrom.SpiderLoginEventNode;
 import com.feng.pigp.fans.model.chrom.SpiderMatchClickNode;
 import com.feng.pigp.fans.service.VerificationCodeService;
+import com.github.rjeschke.txtmark.Run;
 import com.google.common.collect.Maps;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
+import java.util.concurrent.TimeoutException;
 
 /**
  * @author feng
@@ -31,21 +35,19 @@ import java.util.concurrent.TimeUnit;
 public class ChromDriverSpiderUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ChromDriverSpiderUtil.class);
-    public static final String DRIVER_PATH = "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chromedriver.exe";
+    public static final String DRIVER_PATH = "C:\\Users\\feng\\AppData\\Local\\Google\\Chrome\\Application\\chromedriver.exe";
     private static final String SAVE_PATH =  "D:\\img\\";
     public static final int LOADING_WAITING_TIME = 2000;
-
     private static final int MAX_CLICK_ERR_COUNT = 5;
     private static ThreadLocal<Integer> clickCount = new ThreadLocal<>(); //memoery leak
 
-    public static void openUrl(WebDriver driver, String url){
-        try {
-            driver.get(url);
-            Thread.sleep(1000);
-        }catch (Exception e){
-            LOGGER.error("open url error", e);
-        }
+    public static boolean openUrl(WebDriver driver, String url){
+
+
+        driver.get(url); //阻塞式的
+        return false;
     }
+
 
     public static void internalClick(WebElement element){
 
@@ -53,7 +55,7 @@ public class ChromDriverSpiderUtil {
             element.click();
             clickCount.set(0);
         }catch (Exception e){
-            LOGGER.error("click error");
+            LOGGER.debug("click error");
 
             if(clickCount.get()==null){
                 clickCount.set(0);
@@ -97,7 +99,7 @@ public class ChromDriverSpiderUtil {
             LOGGER.info("use proxy :{}-{}", ip.getIp(), ip.getPort());*/
             Map<String, String> map = Maps.newHashMap();
             //map.put("httpProxy", ip.getIp()+":"+ip.getPort());
-            map.put("httpProxy", "94.23.154.55:3128");
+            map.put("httpProxy", "58.218.200.223:30173");
             Proxy proxy = new Proxy(map);
             //options.setProxy(proxy);
         /*}*/
@@ -129,7 +131,7 @@ public class ChromDriverSpiderUtil {
             click(webDriver, node.getClickXPath());
             return true;
         } catch (Exception e) {
-            LOGGER.error("inputAndClick error", e);
+            LOGGER.debug("inputAndClick error", e);
         }
         return false;
     }
@@ -142,25 +144,35 @@ public class ChromDriverSpiderUtil {
     public static boolean login(WebDriver driver, SpiderLoginEventNode eventNode){
 
         try {
-            Thread.sleep(1000);
             LOGGER.info("start login, userName={}", eventNode.getUserName());
             //打开页面
-            if(StringUtils.isNotEmpty(eventNode.getLoginURL())) {
-                driver.get(eventNode.getLoginURL());
-                Thread.sleep(2000);
+            long start = System.currentTimeMillis();
+            if (StringUtils.isNotEmpty(eventNode.getLoginURL())) {
+                boolean result = openUrl(driver, eventNode.getLoginURL());
+                LOGGER.error("open url time:{}", (System.currentTimeMillis()-start));
             }
 
             //查找元素
             WebElement element = driver.findElement(By.xpath(eventNode.getUserNameXPath()));
+            LOGGER.error("open findElement time:{}", (System.currentTimeMillis()-start));
+            element.clear();
             element.sendKeys(eventNode.getUserName());
             WebElement pwdElement = driver.findElement(By.xpath(eventNode.getPasswdXPath()));
             pwdElement.sendKeys(eventNode.getPasswd());
-            if(find(driver, eventNode.getValidateCodeXPath())){
+
+            WebElement submitElement = driver.findElement(By.xpath(eventNode.getLoginXPath()));
+            submitElement.submit();
+            ToolUtil.sleep(2000);
+
+            wait(driver, eventNode.getValidateCodeXPath());
+            WebElement validate =driver.findElement(By.xpath(eventNode.getValidateCodeXPath()));
+            /*if (find(driver, eventNode.getValidateCodeXPath()) &&
+                    (validate=driver.findElement(By.xpath(eventNode.getValidateCodeXPath()))).isDisplayed()) {*/
                 //验证码存在
-                for(int i=0; i<2; i++) {
+                //click(driver, eventNode.getValidateCodeXPath());//第一次裂开的图
+                for (int i = 0; i < 2; i++) {
                     ToolUtil.sleep(500);
                     String savePath = SAVE_PATH + System.currentTimeMillis() + ".png";
-                    WebElement validate = driver.findElement(By.xpath(eventNode.getValidateCodeXPath()));
                     screenShot(driver, savePath, validate.getRect().getX(), validate.getRect().getY(),
                             Integer.parseInt(validate.getAttribute("width")), Integer.parseInt(validate.getAttribute("height")));
                     //获取解析的结果
@@ -174,25 +186,22 @@ public class ChromDriverSpiderUtil {
                         continue;
                     }
 
-                    WebElement codeInput = driver.findElement(By.xpath(Common.VALIDATE_CODE_INPUT));
-                    codeInput.clear();
+                    WebElement codeInput = driver.findElement(By.xpath(eventNode.getValidateCodeInputXPath()));
                     codeInput.sendKeys(code);
 
-                    click(driver, eventNode.getLoginXPath());
-                    if(find(driver, eventNode.getValidateCodeXPath())){
-                        click(driver, eventNode.getValidateCodeXPath());
-                        file.delete();
-                        continue;
-                    }
+                    //click(driver, eventNode.getLoginXPath());
+                    submitElement.submit();
+                    ToolUtil.sleep(2000);
 
                     //设置验证码
-                    File newfile = new File(SAVE_PATH+code+".png");
+                    File newfile = new File(SAVE_PATH + code + ".png");
                     file.renameTo(newfile);
                     return true;
-                }
+                //}
             }
 
-            click(driver, eventNode.getLoginXPath());
+            //click(driver, eventNode.getLoginXPath());
+            submitElement.submit();
             LOGGER.info("{} : login success");
             return true;
         } catch (Exception e) {
@@ -201,6 +210,8 @@ public class ChromDriverSpiderUtil {
 
         return false;
     }
+
+
 
     public static boolean hasAlert(WebDriver driver){
         try {
@@ -314,7 +325,7 @@ public class ChromDriverSpiderUtil {
             Thread.sleep(LOADING_WAITING_TIME);
             return true;
         }catch (Exception e){
-            LOGGER.error("click error", e);
+            LOGGER.debug("click error", e);
         }
 
         return false;
@@ -362,7 +373,7 @@ public class ChromDriverSpiderUtil {
             Thread.sleep(LOADING_WAITING_TIME);
             return true;
         }catch (Exception e){
-            LOGGER.error("click error ", e);
+            LOGGER.debug("click error ", e);
         }
 
         return false;
@@ -374,7 +385,7 @@ public class ChromDriverSpiderUtil {
             WebElement element = driver.findElement(By.xpath(xPath));
             return true;
         }catch (Exception e){
-            System.out.println("没有被挤下线");
+            LOGGER.debug("find error", e);
         }
 
         return false;
@@ -388,7 +399,7 @@ public class ChromDriverSpiderUtil {
             FileUtils.copyFile(file, new File(saveName));
             ImageUtils.cutImageLeftAndRight(saveName, x, y, w, h);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.debug("screen shot error", e);
         }
     }
 
@@ -410,7 +421,7 @@ public class ChromDriverSpiderUtil {
 
             return element.getText();
         } catch (Exception e) {
-            LOGGER.error("getContent error", e);
+            LOGGER.debug("getContent error", e);
         }
 
         return null;
@@ -429,7 +440,7 @@ public class ChromDriverSpiderUtil {
 
             return element.getAttribute("innerHTML");
         } catch (Exception e) {
-            LOGGER.error("getContent error", e);
+            LOGGER.debug("getContent error", e);
         }
 
         return null;
@@ -493,7 +504,7 @@ public class ChromDriverSpiderUtil {
                 clickOrNot(driver, node.getClickKey(), node.getClickContent(),node.getClickXPath());
             }
         }catch (Exception e){
-            LOGGER.error("matchAndClick error", e);
+            LOGGER.debug("matchAndClick error", e);
         }
     }
 
@@ -508,7 +519,7 @@ public class ChromDriverSpiderUtil {
                     return i;
                 }
             }catch (Exception e){
-                LOGGER.error("matchAndClick error", e);
+                LOGGER.debug("matchAndClick error", e);
             }
         }
 
@@ -522,6 +533,21 @@ public class ChromDriverSpiderUtil {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
+        }
+    }
+
+    public static void refresh(WebDriver webDriver) {
+
+        webDriver.navigate().refresh();
+    }
+
+    public static void wait(WebDriver webDriver, String xPath) {
+
+        try {
+            WebDriverWait wait = new WebDriverWait(webDriver, 5);
+            wait.until(ExpectedConditions.elementToBeSelected(By.xpath(xPath)));
+        }catch (Exception e){
+            LOGGER.debug("wait error", e);
         }
     }
 }

@@ -14,6 +14,15 @@ public class SpiderLoginEventNode extends Node{
     private String loginURL;
     private String loginXPath;
     private String validateCodeXPath;
+    private String validateCodeInputXPath;
+
+    public String getValidateCodeInputXPath() {
+        return validateCodeInputXPath;
+    }
+
+    public void setValidateCodeInputXPath(String validateCodeInputXPath) {
+        this.validateCodeInputXPath = validateCodeInputXPath;
+    }
 
     public String getUserName() {
         return userName;

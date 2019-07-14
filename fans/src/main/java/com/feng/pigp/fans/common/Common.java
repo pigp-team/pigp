@@ -11,9 +11,9 @@ public class Common {
     public static String SINA_LOGIN_USERNAME = "//*[@id=\"loginname\"]";
     public static String SINA_LOGIN_PWD = "//*[@id=\"pl_login_form\"]/div/div[3]/div[2]/div/input";
     public static String SINA_LOGIN_BUTTON = "//*[@id=\"pl_login_form\"]/div/div[3]/div[6]/a";
-    public static String SINA_LOGIN_ACK = "//*[@id=\"plc_top\"]/div/div/div[3]/div[1]/ul/li[5]/a/em[2]";
-    public static String SINA_LOGOUT_TOP = "//*[@id=\"pl_common_top\"]/div/div/div[3]/div[2]/div[2]/a";
-    public static String SINA_LOGOUT = "//*[@id=\"pl_common_top\"]/div/div/div[3]/div[2]/div[2]/div/ul/li[10]/a";
+    public static String SINA_LOGIN_ACK = "/html/body/div[2]/div[1]/div[1]/p[1]";
+    public static String SINA_LOGOUT_TOP = "/html/body/div[1]/div/div/div[3]/div[2]/div[2]/a";
+    public static String SINA_LOGOUT = "/html/body/div[1]/div/div/div[3]/div[2]/div[2]/div/ul/li[10]/a";
     public static String SINA_SEARCH_INPUT = "//*[@id=\"pl_common_top\"]/div/div/div[2]/input";
     public static String SINA_SEARCH_BUTTON = "//*[@id=\"pl_common_top\"]/div/div/div[2]/a";
 
@@ -69,8 +69,20 @@ public class Common {
     public static String SINA_TOPIC_MESSAGE = "//*[@id=\"Pl_Official_WeiboDetail__73\"]/div/div/div/div[1]/div[4]/div[4]/a[1]";
     public static String COMMENT_SUB_MORE = "//*[@id=\"Pl_Official_WeiboDetail__73\"]/div/div/div/div[4]/div/div[3]/div[2]/div/div/div[%s]/div[2]/div[4]/div/div[%s]/div/a";
 
-    public static String ATTENTION_ALERT_ERROR = "//*[@id=\"layer_15629958422301\"]";
+    public static String ATTENTION_ALERT_ERROR = "/html/body/div[10]/div[2]/div[4]/a[1]";
+    public static String ATTENTION_ALERT_CLOSE = "/html/body/div[10]/div[2]/div[4]/a[2]";
+
     public static String VALIDATE_CODE_IMAGE = "//*[@id=\"pl_login_form\"]/div/div[3]/div[3]/a/img";
     public static String VALIDATE_CODE_INPUT = "//*[@id=\"pl_login_form\"]/div/div[3]/div[3]/div/input";
-    public static String COMMENT_ERROR_LIMIT = "//*[@id=\"layer_15630078965111\"]/div[2]/div[4]/a";
+    public static String COMMENT_ERROR_LIMIT = "/html/body/div[11]/div[2]/div[4]/a";
+    public static String ACCOUNT_ALL_ERROR = "//*[@id=\"message-p\"]";
+
+    public static String INTERNALE_SINA_LOGIN_USERNAME = "//*[@id=\"username\"]";
+    public static String INTERNALE_SINA_LOGIN_PWD = "//*[@id=\"password\"]";
+    public static String INTERNALE_SINA_LOGIN_BUTTON = "//*[@id=\"vForm\"]/div[2]/div/ul/li[7]/div[1]/input";
+    public static String INTERNALE_VALIDATE_CODE_IMAGE ="//*[@id=\"check_img\"]";
+    public static String INTERNALE_VALIDATE_CODE_INPUT = "//*[@id=\"door\"]";
+    public static String INTERNALE_SINA_LOGIN_URL = "https://login.sina.com.cn/signup/signin.php";
+
+
 }

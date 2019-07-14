@@ -10,6 +10,8 @@ public class User {
     private String username;
     private String pwd;
 
+    private GoalMetric messageMetric = new GoalMetric();
+
 
     public String getUsername() {
         return username;
@@ -25,5 +27,22 @@ public class User {
 
     public void setPwd(String pwd) {
         this.pwd = pwd;
+    }
+
+    public GoalMetric getMessageMetric() {
+        return messageMetric;
+    }
+
+    public void setMessageMetric(GoalMetric messageMetric) {
+        this.messageMetric = messageMetric;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "username='" + username + '\'' +
+                ", pwd='" + pwd + '\'' +
+                ", messageMetric=" + messageMetric.toString() +
+                '}';
     }
 }

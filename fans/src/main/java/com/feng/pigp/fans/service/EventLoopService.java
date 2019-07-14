@@ -1,6 +1,8 @@
 package com.feng.pigp.fans.service;
 
 import com.feng.pigp.fans.common.Common;
+import com.feng.pigp.fans.common.EventTypeEnum;
+import com.feng.pigp.fans.exception.AccountErrorException;
 import com.feng.pigp.fans.model.MultiGoal;
 import com.feng.pigp.fans.model.User;
 import com.feng.pigp.fans.model.chrom.SpiderInputClickNode;
@@ -28,12 +30,7 @@ public class EventLoopService{
     private static final Logger LOGGER = LoggerFactory.getLogger(EventLoopService.class);
     private static final int MAX_COMMENT_COUNT = 10;
     private static final int MAX_SUB_COMMONT_COUNT = 5;
-    private static final long MAX_COMMENT_INTERVAL = 5*60*1000;
-    private static final int MAX_COMMENT_INTERVAL_COUNT = 10;
     private static final String COMMENT_ID_KEY = "comment_id";
-
-    ThreadLocal<Long> isComment = new ThreadLocal<>();
-    ThreadLocal<Integer> commentCount = new ThreadLocal<>();
 
     @Resource
     private GoalPoolService goalPoolService;
@@ -43,6 +40,8 @@ public class EventLoopService{
     private HandlerService handlerService;
     @Resource
     private CommentPoolService commentPoolService;
+    @Resource
+    private SmallBlackHouseService smallBlackHouseService;
 
 
     public void runBatch(int batchSize){
@@ -94,6 +93,8 @@ public class EventLoopService{
         boolean isFirst = true;
         for(User user : userList) {
 
+            long start = System.currentTimeMillis();
+            int goalCount = 0;
             if (user == null) {
                 LOGGER.error("event loop query user error");
                 break;
@@ -112,13 +113,21 @@ public class EventLoopService{
                 //登录
                 handlerService.login(user);
                 List<MultiGoal> goalList = goalPoolService.getMulti();
+                boolean isFirstGoal = true;
                 for(MultiGoal goal : goalList) {
-                    processMultiGoal(goal, user);
+                    goalCount++;
+                    processMultiGoal(goal, user, isFirstGoal);
+                    isFirstGoal = false;
                 }
-            }catch (Throwable e){
-                LOGGER.error("run is error : {}", user.getUsername(), e);
-                isFirst = true;
-                handlerService.close();
+            }catch (AccountErrorException e){
+              //切换账号
+                continue;
+            } catch (Throwable e){
+                LOGGER.error("run is error account is error : {}", user.getUsername(), e);
+                handlerService.refresh();
+            }finally {
+                LOGGER.info("user finish time : {}-{}-{}-{}", user.getUsername(), goalCount,
+                        user, (System.currentTimeMillis()-start));
             }
         }
 
@@ -129,8 +138,9 @@ public class EventLoopService{
      * user处理goal
      * @param goal
      * @param user
+     * @param isFirstGoal
      */
-    private void processMultiGoal(MultiGoal goal, User user) {
+    private void processMultiGoal(MultiGoal goal, User user, boolean isFirstGoal) {
 
         String userName = goal.getUserName();
 
@@ -145,7 +155,7 @@ public class EventLoopService{
         String topic = handlerService.getCommentId(new SpiderQueryContentNode().setContentXPath(Common.SINA_TOPIC_MESSAGE));
 
         if(goal.getUserName().equals(curUserName)) {
-            processTopic(goal, user, topic);
+            processTopic(goal, user, topic, isFirstGoal);
         }
         processComment(goal, user,topic);
     }
@@ -161,7 +171,7 @@ public class EventLoopService{
         int moreCount = 0;
         for (int index=1; index < MAX_COMMENT_COUNT;) {
 
-            updateCommentLimit();
+            validate(goal, user);
             ToolUtil.sleep(500);
             String commentId = handlerService.getCommentId(new SpiderQueryContentNode().setContentXPath(String.format(Common.COMMENT_TOTOLE_FLAG, index)).setKey(COMMENT_ID_KEY));
 
@@ -186,16 +196,13 @@ public class EventLoopService{
                     continue;
                 }
 
-                if(isComment.get()!=null && isComment.get()-System.currentTimeMillis()<=MAX_COMMENT_INTERVAL){
-                    index++;
-                    continue;
+                if(smallBlackHouseService.inBlackHouse(user, goal, EventTypeEnum.COMMENT)) {
+                    handlerService.comment(goal, user, new SpiderInputClickNode()
+                            .setTriggerXPath(String.format(Common.COMMENT_FIRST_COMMENT, index))
+                            .setClickXPath(String.format(Common.COMMENT_FIRST_COMMENT_SUBMIT, index))
+                            .setContentXPath(String.format(Common.COMMENT_FIRST_COMMENT_INPUT, index))
+                            .setContent(commentPoolService.queryCommentWithInternalComment(goal, topic)));
                 }
-                handlerService.comment(goal, user, new SpiderInputClickNode()
-                        .setTriggerXPath(String.format(Common.COMMENT_FIRST_COMMENT, index))
-                        .setClickXPath(String.format(Common.COMMENT_FIRST_COMMENT_SUBMIT, index))
-                        .setContentXPath(String.format(Common.COMMENT_FIRST_COMMENT_INPUT, index))
-                        .setContent(commentPoolService.queryCommentWithInternalComment(goal, topic)));
-                commentCount.set((commentCount.get()!=null?commentCount.get():0)+1);
             }
 
             //楼中楼 回复+点赞
@@ -204,12 +211,19 @@ public class EventLoopService{
         }
     }
 
-    private void updateCommentLimit() {
+    private void validate(MultiGoal goal, User user) {
 
-       if(commentCount.get()!=null && commentCount.get()>MAX_COMMENT_INTERVAL_COUNT){
-           commentCount.set(0);
-           isComment.set(System.currentTimeMillis());
-       }
+        String content = handlerService.getCommentId(new SpiderQueryContentNode().setContentXPath(Common.COMMENT_ERROR_LIMIT));
+        if(StringUtils.isEmpty(content)){
+            return;
+        }
+
+        LOGGER.error("validate info message : $$$$$${}-{}$$$$$", user.getUsername(), content);
+
+        //点击
+        handlerService.click(new SpiderQueryContentNode().setContentXPath(Common.COMMENT_ERROR_LIMIT));
+        //进入小黑屋，老实一点
+        smallBlackHouseService.addHouse(goal, user);
     }
 
     /**
@@ -251,18 +265,14 @@ public class EventLoopService{
                 i++;
                 continue;
             }
-            //回复
-            if(isComment.get()!=null && isComment.get()-System.currentTimeMillis()<=MAX_COMMENT_INTERVAL){
-                i++;
-                continue;
-            }
 
-            handlerService.comment(goal, user, new SpiderInputClickNode()
-                    .setTriggerXPath(String.format(Common.COMMENT_SUB_COMMENT, index, i))
-                    .setClickXPath(String.format(Common.COMMENT_SUB_COMMENT_SUBMIT, index, i))
-                    .setContentXPath(String.format(Common.COMMENT_SUB_COMMENT_INPUT, index, i))
-                    .setContent(commentPoolService.queryCommentWithInternalComment(goal, topic)));
-            commentCount.set((commentCount.get()!=null?commentCount.get():0)+1);
+            if(smallBlackHouseService.inBlackHouse(user, goal, EventTypeEnum.COMMENT)) {
+                handlerService.comment(goal, user, new SpiderInputClickNode()
+                        .setTriggerXPath(String.format(Common.COMMENT_SUB_COMMENT, index, i))
+                        .setClickXPath(String.format(Common.COMMENT_SUB_COMMENT_SUBMIT, index, i))
+                        .setContentXPath(String.format(Common.COMMENT_SUB_COMMENT_INPUT, index, i))
+                        .setContent(commentPoolService.queryCommentWithInternalComment(goal, topic)));
+            }
 
             hasProcessId.add(subCommentId);
             i++;
@@ -271,28 +281,47 @@ public class EventLoopService{
 
     /**
      * user处理goal的消息
-     * @param user
      * @param goal
+     * @param user
      * @param topic
+     * @param isFirstGoal
      */
-    private void processTopic(MultiGoal goal, User user, String topic) {
+    private void processTopic(MultiGoal goal, User user, String topic, boolean isFirstGoal) {
 
-        //关注
-        handlerService.attention(goal, user, new SpiderQueryContentNode().setContentXPath(Common.FULL_COMMENT_ATTENTION));
+        //判断是否关注：这里非常重要，如果没有关注，将会前功尽弃
+        if(isFirstGoal) {
+            //关注
+            handlerService.attention(goal, user, new SpiderQueryContentNode().setContentXPath(Common.FULL_COMMENT_ATTENTION));
+        }else{
+            //判断是否关注
+            String message = handlerService.getCommentId(new SpiderQueryContentNode().setContentXPath(Common.FULL_COMMENT_ATTENTION));
+            LOGGER.info("attention info : {}-{}", user.getUsername(), message);
+            if(!"已关注".equals(message)){
+                LOGGER.error("======================{} has not attention ================", user.getUsername());
+            }
+            handlerService.attention(goal, user, new SpiderQueryContentNode().setContentXPath(Common.FULL_COMMENT_ATTENTION));
+
+        }
+
         //点赞
         handlerService.like(goal, user, new SpiderQueryContentNode().setContentXPath(Common.Full_LIKE));
+
         //转发
-        /*handlerService.share(goal, user,
-                new SpiderInputClickNode().setTriggerXPath(Common.MESSAGE_SHARE_FLAG)
-                        .setClickXPath(Common.MESSAGE_SHARE_SUBMIT)
-                        .setContentXPath(Common.MESSAGE_SHARE_INPUT)
-                        .setContent(commentPoolService.queryCommentWithShare(goal, topic)));*/
+        if(smallBlackHouseService.inBlackHouse(user, goal, EventTypeEnum.SHARE)) {
+            handlerService.share(goal, user,
+                    new SpiderInputClickNode().setTriggerXPath(Common.MESSAGE_SHARE_FLAG)
+                            .setClickXPath(Common.MESSAGE_SHARE_SUBMIT)
+                            .setContentXPath(Common.MESSAGE_SHARE_INPUT)
+                            .setContent(commentPoolService.queryCommentWithShare(goal, topic)));
+        }
+
         //评论
-        handlerService.comment(goal, user,
-                new SpiderInputClickNode().setTriggerXPath(Common.MESSAGE_COMMENT_FLAG)
-                        .setClickXPath(Common.MESSAAGE_COMMENT_SUBMIT)
-                        .setContentXPath(Common.MESSAGE_COMMENT_INFPUT)
-                        .setContent(commentPoolService.queryCommentWithComment(goal, topic)));
-        commentCount.set((commentCount.get()!=null?commentCount.get():0)+1);
+        if(smallBlackHouseService.inBlackHouse(user, goal, EventTypeEnum.COMMENT)) {
+            handlerService.comment(goal, user,
+                    new SpiderInputClickNode().setTriggerXPath(Common.MESSAGE_COMMENT_FLAG)
+                            .setClickXPath(Common.MESSAAGE_COMMENT_SUBMIT)
+                            .setContentXPath(Common.MESSAGE_COMMENT_INFPUT)
+                            .setContent(commentPoolService.queryCommentWithComment(goal, topic)));
+        }
     }
 }
