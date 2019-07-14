@@ -196,7 +196,7 @@ public class EventLoopService{
                     continue;
                 }
 
-                if(smallBlackHouseService.inBlackHouse(user, goal, EventTypeEnum.COMMENT)) {
+                if(!smallBlackHouseService.inBlackHouse(user, goal, EventTypeEnum.COMMENT)) {
                     handlerService.comment(goal, user, new SpiderInputClickNode()
                             .setTriggerXPath(String.format(Common.COMMENT_FIRST_COMMENT, index))
                             .setClickXPath(String.format(Common.COMMENT_FIRST_COMMENT_SUBMIT, index))
@@ -266,7 +266,7 @@ public class EventLoopService{
                 continue;
             }
 
-            if(smallBlackHouseService.inBlackHouse(user, goal, EventTypeEnum.COMMENT)) {
+            if(!smallBlackHouseService.inBlackHouse(user, goal, EventTypeEnum.COMMENT)) {
                 handlerService.comment(goal, user, new SpiderInputClickNode()
                         .setTriggerXPath(String.format(Common.COMMENT_SUB_COMMENT, index, i))
                         .setClickXPath(String.format(Common.COMMENT_SUB_COMMENT_SUBMIT, index, i))
@@ -296,7 +296,7 @@ public class EventLoopService{
             //判断是否关注
             String message = handlerService.getCommentId(new SpiderQueryContentNode().setContentXPath(Common.FULL_COMMENT_ATTENTION));
             LOGGER.info("attention info : {}-{}", user.getUsername(), message);
-            if(!"已关注".equals(message)){
+            if(message!=null && !"已关注".equals(message)){
                 LOGGER.error("======================{} has not attention ================", user.getUsername());
             }
             handlerService.attention(goal, user, new SpiderQueryContentNode().setContentXPath(Common.FULL_COMMENT_ATTENTION));
@@ -307,7 +307,7 @@ public class EventLoopService{
         handlerService.like(goal, user, new SpiderQueryContentNode().setContentXPath(Common.Full_LIKE));
 
         //转发
-        if(smallBlackHouseService.inBlackHouse(user, goal, EventTypeEnum.SHARE)) {
+        if(!smallBlackHouseService.inBlackHouse(user, goal, EventTypeEnum.SHARE)) {
             handlerService.share(goal, user,
                     new SpiderInputClickNode().setTriggerXPath(Common.MESSAGE_SHARE_FLAG)
                             .setClickXPath(Common.MESSAGE_SHARE_SUBMIT)
@@ -316,7 +316,7 @@ public class EventLoopService{
         }
 
         //评论
-        if(smallBlackHouseService.inBlackHouse(user, goal, EventTypeEnum.COMMENT)) {
+        if(!smallBlackHouseService.inBlackHouse(user, goal, EventTypeEnum.COMMENT)) {
             handlerService.comment(goal, user,
                     new SpiderInputClickNode().setTriggerXPath(Common.MESSAGE_COMMENT_FLAG)
                             .setClickXPath(Common.MESSAAGE_COMMENT_SUBMIT)
