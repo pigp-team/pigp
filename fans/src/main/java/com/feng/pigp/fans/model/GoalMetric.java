@@ -41,4 +41,14 @@ public class GoalMetric {
     public void setShareCount(LongAdder shareCount) {
         ShareCount = shareCount;
     }
+
+    @Override
+    public String toString() {
+        return "GoalMetric{" +
+                "AttentionCount=" + AttentionCount.intValue() +
+                ", LikeCount=" + LikeCount.intValue() +
+                ", CommentCount=" + CommentCount.intValue() +
+                ", ShareCount=" + ShareCount.intValue() +
+                '}';
+    }
 }

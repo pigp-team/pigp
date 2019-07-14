@@ -122,7 +122,7 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
         SpiderQueryContentNode queryNode = (SpiderQueryContentNode)node;
         boolean success = ChromDriverSpiderUtil.clickOrNot(getWebDriver(), "title", "赞", queryNode.getContentXPath());
         if(success) {
-            goal.getMessageMetric().getLikeCount().increment();
+            user.getMessageMetric().getLikeCount().increment();
             LOGGER.info("handler service like success {}-{}-{}", user.getUsername(), goal.getUserName(), goal.getId());
             return true;
         }
@@ -139,7 +139,7 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
         ChromDriverSpiderUtil.click(getWebDriver(), inputClickNode.getTriggerXPath());
         boolean success = ChromDriverSpiderUtil.inputAndClick(getWebDriver(), inputClickNode);
         if(success) {
-            goal.getMessageMetric().getShareCount().increment();
+            user.getMessageMetric().getShareCount().increment();
             LOGGER.info("handler service share success {}-{}-{}", user.getUsername(), goal.getUserName(), goal.getId());
             return true;
         }
@@ -161,7 +161,7 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
         }
 
         if(success) {
-            goal.getMessageMetric().getCommentCount().increment();
+            user.getMessageMetric().getCommentCount().increment();
             LOGGER.info("handler service comment success {}-{}-{}", user.getUsername(), goal.getUserName(), goal.getId());
             return true;
         }
@@ -196,7 +196,7 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
             throw new AccountErrorException("account error");
         }
         if(success) {
-            goal.getMessageMetric().getAttentionCount().increment();
+            user.getMessageMetric().getAttentionCount().increment();
             LOGGER.info("handler service attention success {}-{}-{}", user.getUsername(), goal.getUserName(), goal.getId());
             return true;
         }

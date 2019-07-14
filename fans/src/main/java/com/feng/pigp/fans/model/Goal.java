@@ -16,7 +16,6 @@ public class Goal {
     private int id;
     private Goal next;
 
-    private GoalMetric messageMetric = new GoalMetric();
     private GoalMetric selfCommentMetric = new GoalMetric();
     private GoalMetric commentMetric = new GoalMetric();
 
@@ -34,14 +33,6 @@ public class Goal {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public GoalMetric getMessageMetric() {
-        return messageMetric;
-    }
-
-    public void setMessageMetric(GoalMetric messageMetric) {
-        this.messageMetric = messageMetric;
     }
 
     public GoalMetric getSelfCommentMetric() {
