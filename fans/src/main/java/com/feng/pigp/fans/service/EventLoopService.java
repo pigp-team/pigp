@@ -147,7 +147,7 @@ public class EventLoopService{
         //2.打开连接
         String curUserName = handlerService.openUrlAndGetUser(goal, user, new SpiderQueryContentNode().setContentXPath(Common.FULL_COMMENT_USERNAME));
         LOGGER.info("start comment : {}-{}", userName, curUserName);
-        if (StringUtils.isEmpty(userName)) {
+        if (StringUtils.isEmpty(curUserName)) {
             LOGGER.error("open goal url fail {}-{}", GsonUtil.toJson(goal), user.getUsername());
             return;
         }
