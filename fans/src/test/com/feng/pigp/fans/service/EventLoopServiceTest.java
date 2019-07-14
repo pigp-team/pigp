@@ -28,6 +28,6 @@ public class EventLoopServiceTest {
     @Test
     public void multiRun() throws Exception {
 
-        eventLoopService.runBatch(3);
+        eventLoopService.runBatch(5);
     }
 }
