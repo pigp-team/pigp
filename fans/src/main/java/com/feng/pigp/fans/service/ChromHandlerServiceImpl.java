@@ -249,51 +249,13 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
     }
 
     @Override
-    public boolean fullAttention() {
-
-        SpiderMatchClickNode node = new SpiderMatchClickNode();
-        node.setClickXPath(Common.FULL_COMMENT_ATTENTION);
-        node.setContentXPath(Common.FULL_COMMENT_ATTENTION);
-        node.setMatchContent("关注");
-        ChromDriverSpiderUtil.matchAndClick(getWebDriver(), node);
-        LOGGER.info("关注成功");
-        return true;
-    }
-
-    @Override
-    public boolean fullLogin(User user, boolean isClick) {
-
-        if(isClick) {
-            ChromDriverSpiderUtil.click(getWebDriver(), Common.FULL_COMMENT_ATTENTION);
-        }
-
-        SpiderLoginEventNode node = fullInitLoginEventNode(user);
-        ChromDriverSpiderUtil.login(getWebDriver(), node);
-
-        //确认是否已经登录成功
-        if(!isLogin()){
-            fullLogin(user, false);
-        }
-
-        return true;
-    }
-
-    @Override
-    public boolean fullLike() {
-
-        ChromDriverSpiderUtil.clickOrNot(getWebDriver(), "title", "赞", Common.Full_LIKE);
-        LOGGER.info("点赞成功");
-        return true;
-    }
-
-    @Override
     public int getCommentCount(Node node) {
         SpiderSubElemNumNode subElemNumNode = new SpiderSubElemNumNode();
         return ChromDriverSpiderUtil.getSubElementCount(getWebDriver(), subElemNumNode.getParentXPath(), subElemNumNode.getTag());
     }
 
     @Override
-    public String getCommentId(Node object) {
+    public String getContent(Node object) {
 
         SpiderQueryContentNode node = (SpiderQueryContentNode)object;
         return ChromDriverSpiderUtil.getContentWithKey(getWebDriver(), node.getContentXPath(), node.getKey());

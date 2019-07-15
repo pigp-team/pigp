@@ -34,15 +34,9 @@ public interface HandlerService<T> {
 
     String openUrlAndGetUser(Goal goal, User user, T object);
 
-    boolean fullAttention();
-
-    boolean fullLogin(User user, boolean isClick);
-
-    boolean fullLike();
-
     int getCommentCount(T  object);
 
-    String getCommentId(T object);
+    String getContent(T object);
 
     void click(T object);
 

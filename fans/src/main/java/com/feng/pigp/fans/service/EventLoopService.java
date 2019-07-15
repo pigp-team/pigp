@@ -146,7 +146,7 @@ public class EventLoopService{
             return;
         }
 
-        String topic = handlerService.getCommentId(new SpiderQueryContentNode().setContentXPath(Common.SINA_TOPIC_MESSAGE));
+        String topic = handlerService.getContent(new SpiderQueryContentNode().setContentXPath(Common.SINA_TOPIC_MESSAGE));
 
         if(goal.getUserName().equals(curUserName)) {
             processTopic(goal, user, topic, isFirstGoal);
@@ -167,7 +167,7 @@ public class EventLoopService{
 
             validate(goal, user);
             ToolUtil.sleep(500);
-            String commentId = handlerService.getCommentId(new SpiderQueryContentNode().setContentXPath(String.format(Common.COMMENT_TOTOLE_FLAG, index)).setKey(COMMENT_ID_KEY));
+            String commentId = handlerService.getContent(new SpiderQueryContentNode().setContentXPath(String.format(Common.COMMENT_TOTOLE_FLAG, index)).setKey(COMMENT_ID_KEY));
 
             //还是没有找到，加载更多
             if (StringUtils.isEmpty(commentId)) {
@@ -180,7 +180,7 @@ public class EventLoopService{
             }
 
             //1. 获取首楼，判断是否自评
-            String firstUserName = handlerService.getCommentId(new SpiderQueryContentNode().setContentXPath(String.format(Common.COMMENT_FIRST_USERNAME, index)));
+            String firstUserName = handlerService.getContent(new SpiderQueryContentNode().setContentXPath(String.format(Common.COMMENT_FIRST_USERNAME, index)));
             if (goal.getUserName().equals(firstUserName)) {//自评， 回复+点赞
 
                 LOGGER.info("self comment {}-{}", user.getUsername(), goal.getUserName());
@@ -207,7 +207,7 @@ public class EventLoopService{
 
     private void validate(MultiGoal goal, User user) {
 
-        String content = handlerService.getCommentId(new SpiderQueryContentNode().setContentXPath(Common.COMMENT_ERROR_LIMIT));
+        String content = handlerService.getContent(new SpiderQueryContentNode().setContentXPath(Common.COMMENT_ERROR_LIMIT));
         if(StringUtils.isEmpty(content)){
             return;
         }
@@ -231,7 +231,7 @@ public class EventLoopService{
 
         Set<String> hasProcessId = Sets.newHashSet();
         for (int i = 1; i <= MAX_SUB_COMMONT_COUNT; ) {
-            String subCommentId = handlerService.getCommentId(new SpiderQueryContentNode()
+            String subCommentId = handlerService.getContent(new SpiderQueryContentNode()
                     .setContentXPath(String.format(Common.COMMENT_SUB_TOTOLE_FLAG, index, i)).setKey(COMMENT_ID_KEY));
 
             //查看更多
@@ -246,7 +246,7 @@ public class EventLoopService{
             }
 
             //1. 获取子评论姓名
-            String subUserName = handlerService.getCommentId(new SpiderQueryContentNode().setContentXPath(String.format(Common.COMMENT_SUB_USERNAME, index, i)));
+            String subUserName = handlerService.getContent(new SpiderQueryContentNode().setContentXPath(String.format(Common.COMMENT_SUB_USERNAME, index, i)));
             if (!goal.getUserName().equals(subUserName)) {
                 i++;
                 continue;
@@ -288,7 +288,7 @@ public class EventLoopService{
             handlerService.attention(goal, user, new SpiderQueryContentNode().setContentXPath(Common.FULL_COMMENT_ATTENTION));
         }else{
             //判断是否关注
-            String message = handlerService.getCommentId(new SpiderQueryContentNode().setContentXPath(Common.FULL_COMMENT_ATTENTION));
+            String message = handlerService.getContent(new SpiderQueryContentNode().setContentXPath(Common.FULL_COMMENT_ATTENTION));
             LOGGER.info("attention info : {}-{}", user.getUsername(), message);
             if(message!=null && !"已关注".equals(message)){
                 LOGGER.error("======================{} has not attention ================", user.getUsername());
