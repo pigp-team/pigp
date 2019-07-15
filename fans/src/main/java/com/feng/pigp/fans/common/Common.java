@@ -76,6 +76,7 @@ public class Common {
     public static String VALIDATE_CODE_INPUT = "//*[@id=\"pl_login_form\"]/div/div[3]/div[3]/div/input";
     public static String COMMENT_ERROR_LIMIT = "/html/body/div[11]/div[2]/div[4]/a";
     public static String ACCOUNT_ALL_ERROR = "//*[@id=\"message-p\"]";
+    public static String AGREE_RULE = "/html/body/div[8]/div[2]/div[3]/a[1]";
 
     public static String INTERNALE_SINA_LOGIN_USERNAME = "//*[@id=\"username\"]";
     public static String INTERNALE_SINA_LOGIN_PWD = "//*[@id=\"password\"]";

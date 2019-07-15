@@ -28,6 +28,7 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
 
     private static final int MAX_RETRY = 3;
     private static final String ERROR_TEXT = "异常";
+    private static final String AGREE_TEXT = "同意";
     private ThreadLocal<WebDriver> threadLocal = new ThreadLocal<WebDriver>();
 
     @Override
@@ -185,6 +186,12 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
     @Override
     public boolean attention(Goal goal, User user, Node node) {
 
+        //同意协议
+        if(AGREE_TEXT.equals(ChromDriverSpiderUtil.getContent(getWebDriver(), Common.AGREE_RULE))){
+            LOGGER.info("user agree protol : {}", user.getUsername());
+            ChromDriverSpiderUtil.click(getWebDriver(), Common.AGREE_RULE);
+        }
+
         SpiderQueryContentNode queryNode = (SpiderQueryContentNode)node;
         boolean success = ChromDriverSpiderUtil.click(getWebDriver(), queryNode.getContentXPath());
 
@@ -195,6 +202,7 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
             ChromDriverSpiderUtil.click(getWebDriver(), Common.ATTENTION_ALERT_CLOSE);
             throw new AccountErrorException("account error");
         }
+
         if(success) {
             user.getMessageMetric().getAttentionCount().increment();
             LOGGER.info("handler service attention success {}-{}-{}", user.getUsername(), goal.getUserName(), goal.getId());
@@ -237,11 +245,16 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
             MultiGoal multiGoal = (MultiGoal) goal;
             SpiderQueryContentNode queryNode = (SpiderQueryContentNode) node;
             ChromDriverSpiderUtil.openUrl(getWebDriver(), multiGoal.getUrl());
+            //如果页面加载失败，下一句操作会堵住
             String userName = ChromDriverSpiderUtil.getContent(getWebDriver(), queryNode.getContentXPath());
+
             if (StringUtils.isNotEmpty(userName)) {
                 LOGGER.info("handler service open goal url success  : {}-{}-{}", goal.getId(), user.getUsername(), userName);
                 return userName;
             }
+
+            ChromDriverSpiderUtil.refresh(getWebDriver());
+
         }catch (Exception e){
             LOGGER.debug("open url and get error", e);
         }

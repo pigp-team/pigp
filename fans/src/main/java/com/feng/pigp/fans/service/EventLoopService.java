@@ -8,7 +8,6 @@ import com.feng.pigp.fans.model.User;
 import com.feng.pigp.fans.model.chrom.SpiderInputClickNode;
 import com.feng.pigp.fans.model.chrom.SpiderQueryContentNode;
 import com.feng.pigp.fans.util.ToolUtil;
-import com.feng.pigp.util.GsonUtil;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -110,9 +109,11 @@ public class EventLoopService{
                 List<MultiGoal> goalList = goalPoolService.getMulti();
                 boolean isFirstGoal = true;
                 for(MultiGoal goal : goalList) {
+                    long goalStart = System.currentTimeMillis();
                     goalCount++;
                     processMultiGoal(goal, user, isFirstGoal);
                     isFirstGoal = false;
+                    LOGGER.info("process url :{}-{}-{}", goalCount, goal.getUrl(), (System.currentTimeMillis()-goalStart));
                 }
             }catch (AccountErrorException e){
               //切换账号
@@ -143,7 +144,7 @@ public class EventLoopService{
         String curUserName = handlerService.openUrlAndGetUser(goal, user, new SpiderQueryContentNode().setContentXPath(Common.FULL_COMMENT_USERNAME));
         LOGGER.info("start comment : {}-{}", userName, curUserName);
         if (StringUtils.isEmpty(curUserName)) {
-            LOGGER.error("open goal url fail {}-{}", GsonUtil.toJson(goal), user.getUsername());
+            LOGGER.error("open goal url fail {}-{}", goal.getUrl(), user.getUsername());
             return;
         }
 

@@ -86,7 +86,7 @@ public class ChromDriverSpiderUtil {
         options.addArguments("--start-maximized");
         options.addArguments("--disable-gpu");
         //options.addArguments("--start-fullscreen");
-        options.addArguments("--headless");
+        //options.addArguments("--headless");
         //设置ssl证书支持
         options.setCapability("acceptSslCerts", true);
         //设置截屏支持
@@ -116,7 +116,7 @@ public class ChromDriverSpiderUtil {
         //创建driver对象
         WebDriver driver = new ChromeDriver(options);
         //设置隐性等待（作用于全局）
-        driver.manage().timeouts().implicitlyWait(1, TimeUnit.SECONDS);
+        //driver.manage().timeouts().implicitlyWait(1, TimeUnit.SECONDS);
         //810*800
         if(width>0 && height>0) {
             driver.manage().window().setSize(new Dimension(width, height));

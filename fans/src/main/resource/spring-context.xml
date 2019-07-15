@@ -7,5 +7,5 @@
     <context:annotation-config/>
     <context:component-scan base-package="com.feng.pigp.fans.service"/>
 
-    <import resource="datasource.xml"/>
+    <!--<import resource="datasource.xml"/>-->
 </beans>
