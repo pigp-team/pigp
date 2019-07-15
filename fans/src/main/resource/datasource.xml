@@ -8,6 +8,7 @@
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
     <context:property-placeholder location="classpath:db.properties" />
+
     <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" destroy-method="close" >
         <!-- 数据库基本信息配置 -->
         <property name="url" value="${url}" />
@@ -38,5 +39,24 @@
         <!-- 关闭 abanded 连接时输出错误日志 -->
         <property name="logAbandoned" value="${logAbandoned}" />
     </bean >
+
+    <!--sqlSessionFactoryBean -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="mapperLocations" value="classpath*:mybatis/*.xml"/>
+        <property name="typeAliasesPackage" value="com.feng.pigp.fans.model"/>
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>
+    </bean>
+
+    <!--mapper scanner -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer"
+          p:basePackage="com.feng.pigp.fans.dao"
+          p:sqlSessionFactoryBeanName="sqlSessionFactory"/>
+
+    <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+    <tx:annotation-driven transaction-manager="txManager" proxy-target-class="true"/>
     
 </beans>
