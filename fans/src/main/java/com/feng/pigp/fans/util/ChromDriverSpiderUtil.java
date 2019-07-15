@@ -84,9 +84,9 @@ public class ChromDriverSpiderUtil {
         ChromeOptions options = new ChromeOptions();
         //设置浏览器最大化
         options.addArguments("--start-maximized");
-        //options.addArguments("--headless");
-        //options.addArguments("--disable-gpu");
+        options.addArguments("--disable-gpu");
         //options.addArguments("--start-fullscreen");
+        //options.addArguments("--headless");
         //设置ssl证书支持
         options.setCapability("acceptSslCerts", true);
         //设置截屏支持
@@ -99,7 +99,7 @@ public class ChromDriverSpiderUtil {
             LOGGER.info("use proxy :{}-{}", ip.getIp(), ip.getPort());*/
             Map<String, String> map = Maps.newHashMap();
             //map.put("httpProxy", ip.getIp()+":"+ip.getPort());
-            map.put("httpProxy", "58.218.200.223:30173");
+            map.put("httpProxy", "58.218.200.223:30198");
             Proxy proxy = new Proxy(map);
             //options.setProxy(proxy);
         /*}*/
@@ -107,8 +107,10 @@ public class ChromDriverSpiderUtil {
         Map<String, Object> prefs = new HashMap<String, Object>();
 
         // 设置提醒的设置，2表示block
+        //prefs.put("profile.managed_default_content_settings.images", 2);
         prefs.put("profile.default_content_setting_values.notifications", 2);
         prefs.put("profile.default_content_settings.cookies", 2);
+        //prefs.put("--media-cache-size", 1024);
         options.setExperimentalOption("prefs", prefs);
 
         //创建driver对象
@@ -172,6 +174,7 @@ public class ChromDriverSpiderUtil {
                 //click(driver, eventNode.getValidateCodeXPath());//第一次裂开的图
                 for (int i = 0; i < 2; i++) {
                     ToolUtil.sleep(500);
+                    click(driver, eventNode.getValidateCodeXPath());
                     String savePath = SAVE_PATH + System.currentTimeMillis() + ".png";
                     screenShot(driver, savePath, validate.getRect().getX(), validate.getRect().getY(),
                             Integer.parseInt(validate.getAttribute("width")), Integer.parseInt(validate.getAttribute("height")));

@@ -50,7 +50,7 @@ public class EventLoopService{
         List<List<User>> list = userPoolService.getUser(batchSize);
         for(List<User> user : list){
 
-            new Thread(new Task(goalPoolService, handlerService, commentPoolService, this, user, countLatch)).start();
+            new Thread(new Task(this, user, countLatch)).start();
         }
 
         try {
@@ -62,18 +62,12 @@ public class EventLoopService{
     }
 
     public static class Task implements Runnable{
-        private GoalPoolService goalPoolService;
-        private HandlerService handlerService;
-        private CommentPoolService commentPoolService;
         private EventLoopService eventLoopService;
         private List<User> userList;
         private CountDownLatch countLatch;
 
-        public Task(GoalPoolService goalPoolService, HandlerService handlerService, CommentPoolService commentPoolService, EventLoopService eventLoopService,
+        public Task(EventLoopService eventLoopService,
                     List<User> userList, CountDownLatch countLatch) {
-            this.goalPoolService = goalPoolService;
-            this.handlerService = handlerService;
-            this.commentPoolService = commentPoolService;
             this.eventLoopService = eventLoopService;
             this.userList = userList;
             this.countLatch = countLatch;
