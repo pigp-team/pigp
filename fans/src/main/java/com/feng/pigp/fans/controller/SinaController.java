@@ -13,13 +13,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/sina")
 public class SinaController {
 
-    @RequestMapping("/submitTask")
+    @RequestMapping("/task/submit")
     public boolean submitTask(){
 
         return true;
     }
 
-    @RequestMapping("/cancelTask")
+    @RequestMapping("/task/cancel")
     public boolean cancelTask(){
 
         return true;
