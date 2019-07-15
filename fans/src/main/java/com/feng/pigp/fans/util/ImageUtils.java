@@ -3,6 +3,7 @@ package com.feng.pigp.fans.util;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 
@@ -13,17 +14,19 @@ import java.io.IOException;
  */
 public class ImageUtils {
 
-    public static void cutImageLeftAndRight(String sourceName, int x, int y, int w, int h){
-
+    public static byte[] cutImageLeftAndRight(File file, int x, int y, int w, int h){
         try {
-            File file = new File(sourceName);
             BufferedImage bufImage = ImageIO.read(file);
             BufferedImage newImage = bufImage.getSubimage(x, y, w, h);
             file.delete();
 
-            ImageIO.write(newImage, "png", file);
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            ImageIO.write(newImage, "png", out);
+            return out.toByteArray();
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        return null;
     }
 }

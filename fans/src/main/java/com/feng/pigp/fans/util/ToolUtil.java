@@ -1,5 +1,6 @@
 package com.feng.pigp.fans.util;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,5 +72,30 @@ public class ToolUtil {
         }
         byte[] s = out.toByteArray();
         return s;
+    }
+
+    public static void saveValidate(byte[] dataBytes, String savePath) {
+
+        if(dataBytes==null || StringUtils.isEmpty(savePath)){
+            return;
+        }
+
+        FileOutputStream out = null;
+
+        try{
+            out = new FileOutputStream(savePath);
+            out.write(dataBytes);
+            out.flush();
+        }catch (Exception e){
+            LOGGER.debug("write file error", e);
+        }finally {
+            if(out!=null){
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    LOGGER.debug("write file close error", e);
+                }
+            }
+        }
     }
 }

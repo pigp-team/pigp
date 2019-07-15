@@ -47,6 +47,8 @@ public class ChromDriverSpider {
 
         ChromeOptions options = new ChromeOptions();
         //设置浏览器最大化
+        options.addArguments("--disable-gpu");
+        options.addArguments("--headless");
         options.addArguments("--start-maximized");
         //options.addArguments("--start-fullscreen");
         //设置ssl证书支持
@@ -270,6 +272,17 @@ public class ChromDriverSpider {
         }
 
         return null;
+    }
+
+    public static void screenShot(WebDriver driver, String saveName){
+
+        File file = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+
+        try {
+            FileUtils.copyFile(file, new File(saveName));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void screenShot(WebDriver driver, String saveName, int height){

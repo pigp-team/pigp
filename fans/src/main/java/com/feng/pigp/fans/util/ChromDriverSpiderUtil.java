@@ -86,7 +86,7 @@ public class ChromDriverSpiderUtil {
         options.addArguments("--start-maximized");
         options.addArguments("--disable-gpu");
         //options.addArguments("--start-fullscreen");
-        //options.addArguments("--headless");
+        options.addArguments("--headless");
         //设置ssl证书支持
         options.setCapability("acceptSslCerts", true);
         //设置截屏支持
@@ -168,39 +168,34 @@ public class ChromDriverSpiderUtil {
 
             wait(driver, eventNode.getValidateCodeXPath());
             WebElement validate =driver.findElement(By.xpath(eventNode.getValidateCodeXPath()));
-            /*if (find(driver, eventNode.getValidateCodeXPath()) &&
-                    (validate=driver.findElement(By.xpath(eventNode.getValidateCodeXPath()))).isDisplayed()) {*/
-                //验证码存在
-                //click(driver, eventNode.getValidateCodeXPath());//第一次裂开的图
-                for (int i = 0; i < 2; i++) {
-                    ToolUtil.sleep(500);
+
+            for (int i = 0; i < 2; i++) {
+
+                byte[] dataBytes = screenShot(driver, validate.getRect().getX(), validate.getRect().getY(),
+                        Integer.parseInt(validate.getAttribute("width")), Integer.parseInt(validate.getAttribute("height")));
+
+                if(dataBytes==null){
+                    continue;
+                }
+                //获取解析的结果
+                String code = VerificationCodeService.distinguishCode(dataBytes);
+                //将原图片名称修改为正确解析的名称
+                if (StringUtils.isEmpty(code)) {
+                    LOGGER.error("code error");
                     click(driver, eventNode.getValidateCodeXPath());
-                    String savePath = SAVE_PATH + System.currentTimeMillis() + ".png";
-                    screenShot(driver, savePath, validate.getRect().getX(), validate.getRect().getY(),
-                            Integer.parseInt(validate.getAttribute("width")), Integer.parseInt(validate.getAttribute("height")));
-                    //获取解析的结果
-                    File file = new File(savePath);
-                    String code = VerificationCodeService.distinguishCode(ToolUtil.getBytes(file));
-                    //将原图片名称修改为正确解析的名称
-                    if (StringUtils.isEmpty(code)) {
-                        LOGGER.error("code error");
-                        file.delete();
-                        click(driver, eventNode.getValidateCodeXPath());
-                        continue;
-                    }
+                    continue;
+                }
 
-                    WebElement codeInput = driver.findElement(By.xpath(eventNode.getValidateCodeInputXPath()));
-                    codeInput.sendKeys(code);
+                WebElement codeInput = driver.findElement(By.xpath(eventNode.getValidateCodeInputXPath()));
+                codeInput.sendKeys(code);
 
-                    //click(driver, eventNode.getLoginXPath());
-                    submitElement.submit();
-                    ToolUtil.sleep(2000);
+                //click(driver, eventNode.getLoginXPath());
+                submitElement.submit();
+                ToolUtil.sleep(2000);
 
-                    //设置验证码
-                    File newfile = new File(SAVE_PATH + code + ".png");
-                    file.renameTo(newfile);
-                    return true;
-                //}
+                String savePath = SAVE_PATH + code + ".png";
+                ToolUtil.saveValidate(dataBytes, savePath);
+                return true;
             }
 
             //click(driver, eventNode.getLoginXPath());
@@ -394,16 +389,18 @@ public class ChromDriverSpiderUtil {
         return false;
     }
 
-    public static void screenShot(WebDriver driver, String saveName, int x, int y, int w, int h){
+    public static byte[] screenShot(WebDriver driver, int x, int y, int w, int h){
 
         File file = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
 
         try {
-            FileUtils.copyFile(file, new File(saveName));
-            ImageUtils.cutImageLeftAndRight(saveName, x, y, w, h);
-        } catch (IOException e) {
+            //FileUtils.copyFile(file, new File(saveName));
+            return ImageUtils.cutImageLeftAndRight(file, x, y, w, h);
+        } catch (Exception e) {
             LOGGER.debug("screen shot error", e);
         }
+
+        return null;
     }
 
     public static int getIntContent(WebDriver driver, String xPath, String startChar, String endChar){
