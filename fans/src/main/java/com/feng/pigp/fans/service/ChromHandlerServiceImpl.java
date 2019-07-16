@@ -47,7 +47,7 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
         return true;
     }
 
-    private void banLoadImage(boolean banImage){
+    public void banLoadImage(boolean banImage){
 
         ChromDriverSpiderUtil.openUrl(getWebDriver(), Common.SETTING_IMAGE_URL, Common.SETTING_IMAGE_TXT);
         String content = ChromDriverSpiderUtil.getContent(getWebDriver(), Common.SETTING_IMAGE_TXT);

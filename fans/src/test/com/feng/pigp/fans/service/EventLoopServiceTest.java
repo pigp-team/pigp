@@ -2,6 +2,7 @@ package com.feng.pigp.fans.service;
 
 import com.feng.pigp.fans.model.MultiGoal;
 import com.feng.pigp.fans.model.User;
+import com.feng.pigp.fans.model.chrom.Node;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -20,6 +21,8 @@ public class EventLoopServiceTest {
 
     @Resource
     private EventLoopService eventLoopService;
+    @Resource
+    private ChromHandlerServiceImpl chromHandlerService;
 
     @Test
     public void multiRun() throws Exception {
@@ -32,5 +35,11 @@ public class EventLoopServiceTest {
         User user = new User();
         MultiGoal goal = new MultiGoal();
         eventLoopService.enterInteractivePage(user, goal);
+    }
+
+    @Test
+    public void imgLoadTest(){
+
+        chromHandlerService.banLoadImage(true);
     }
 }
