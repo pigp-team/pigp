@@ -29,6 +29,7 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
     private static final int MAX_RETRY = 3;
     private static final String ERROR_TEXT = "异常";
     private static final String AGREE_TEXT = "同意";
+    private static final String BAN_IMG = "不显示任何图片";
     private ThreadLocal<WebDriver> threadLocal = new ThreadLocal<WebDriver>();
 
     @Override
@@ -39,9 +40,24 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
             logout(user);
         }
 
+        banLoadImage(false);//设置可以加载图片
         loginWithOutLogout(user,null, 1);
         LOGGER.info("handler service login success {}", user.getUsername());
+        banLoadImage(true);//禁用图片
         return true;
+    }
+
+    private void banLoadImage(boolean banImage){
+
+        ChromDriverSpiderUtil.openUrl(getWebDriver(), Common.SETTING_IMAGE_URL, Common.SETTING_IMAGE_TXT);
+        String content = ChromDriverSpiderUtil.getContent(getWebDriver(), Common.SETTING_IMAGE_TXT);
+        if(BAN_IMG.equals(content) && !banImage){//目前是禁用
+            ChromDriverSpiderUtil.click(getWebDriver(), Common.SETTING_IMAGE_TXT);
+        }
+
+        if(!BAN_IMG.equals(content) && banImage){
+            ChromDriverSpiderUtil.click(getWebDriver(), Common.SETTING_IMAGE_TXT);
+        }
     }
 
     private boolean login(User user, String url) {

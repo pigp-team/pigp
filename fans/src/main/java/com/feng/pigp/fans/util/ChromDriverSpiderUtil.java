@@ -1,5 +1,6 @@
 package com.feng.pigp.fans.util;
 
+import com.feng.pigp.fans.common.Common;
 import com.feng.pigp.fans.exception.FansException;
 import com.feng.pigp.fans.model.chrom.SpiderInputClickNode;
 import com.feng.pigp.fans.model.chrom.SpiderLoginEventNode;
@@ -159,14 +160,15 @@ public class ChromDriverSpiderUtil {
             WebElement pwdElement = driver.findElement(By.xpath(eventNode.getPasswdXPath()));
             pwdElement.sendKeys(eventNode.getPasswd());
 
+            ToolUtil.sleep(100);
             WebElement submitElement = driver.findElement(By.xpath(eventNode.getLoginXPath()));
             submitElement.submit();
-            ToolUtil.sleep(2000);
+            //ToolUtil.sleep(2000);
 
-            boolean waitSuccess = wait(driver, eventNode.getValidateCodeXPath());
-            if(!waitSuccess){
+            boolean waitSuccess = waitSelected(driver, eventNode.getValidateCodeInputXPath());
+            /*if(!waitSuccess){
                 return false;
-            }
+            }*/
             WebElement validate =driver.findElement(By.xpath(eventNode.getValidateCodeXPath()));
 
             for (int i = 0; i < 2; i++) {
@@ -202,6 +204,64 @@ public class ChromDriverSpiderUtil {
             submitElement.submit();
             LOGGER.info("{} : login success");
             return true;
+        } catch (Exception e) {
+            LOGGER.error("login error", e);
+        }
+
+        return false;
+    }
+
+    public static boolean loginTest(WebDriver driver, SpiderLoginEventNode eventNode){
+
+        try {
+            LOGGER.info("start login, userName={}", eventNode.getUserName());
+            //打开页面
+            long start = System.currentTimeMillis();
+            if (StringUtils.isNotEmpty(eventNode.getLoginURL())) {
+                boolean result = openUrl(driver, eventNode.getLoginURL(), eventNode.getUserNameXPath());
+                LOGGER.error("open url time:{}", (System.currentTimeMillis() - start));
+            }
+
+            //查找元素
+            WebElement element = driver.findElement(By.xpath(eventNode.getUserNameXPath()));
+            LOGGER.error("open findElement time:{}", (System.currentTimeMillis() - start));
+            element.clear();
+            element.sendKeys(eventNode.getUserName());
+            WebElement pwdElement = driver.findElement(By.xpath(eventNode.getPasswdXPath()));
+            pwdElement.sendKeys(eventNode.getPasswd());
+
+            WebElement submitElement = driver.findElement(By.xpath(eventNode.getLoginXPath()));
+            submitElement.submit();
+            ToolUtil.sleep(2000);
+
+            boolean waitSuccess = wait(driver, eventNode.getValidateCodeXPath());
+            if (!waitSuccess) {
+                return false;
+            }
+            WebElement validate = driver.findElement(By.xpath(eventNode.getValidateCodeXPath()));
+
+            for (; ; ) {
+
+                byte[] dataBytes = screenShot(driver, validate.getRect().getX(), validate.getRect().getY(),
+                        Integer.parseInt(validate.getAttribute("width")), Integer.parseInt(validate.getAttribute("height")));
+
+                if (dataBytes == null) {
+                    continue;
+                }
+                //获取解析的结果
+                String code = VerificationCodeService.distinguishCode(dataBytes);
+                //将原图片名称修改为正确解析的名称
+                if (StringUtils.isEmpty(code)) {
+                    LOGGER.error("code error");
+                    click(driver, eventNode.getValidateCodeXPath());
+                    continue;
+                }
+
+                String savePath = SAVE_PATH + code + ".png";
+                ToolUtil.saveValidate(dataBytes, savePath);
+
+                click(driver, Common.INTERNALE_VALIDATE_CODE_IMAGE_CHANGE);
+            }
         } catch (Exception e) {
             LOGGER.error("login error", e);
         }
@@ -515,11 +575,24 @@ public class ChromDriverSpiderUtil {
         webDriver.navigate().refresh();
     }
 
+    public static boolean waitSelected(WebDriver webDriver, String xPath) {
+
+        try {
+            WebDriverWait wait = new WebDriverWait(webDriver, 3);
+            wait.until(ExpectedConditions.elementToBeSelected(By.xpath(xPath)));
+            return true;
+        }catch (Exception e){
+            LOGGER.debug("wait error", e);
+        }
+
+        return false;
+    }
+
     public static boolean wait(WebDriver webDriver, String xPath) {
 
         try {
             WebDriverWait wait = new WebDriverWait(webDriver, 5);
-            wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.xpath(xPath)));
+            wait.until(ExpectedConditions.invisibilityOfElementLocated(By.xpath(xPath)));
             return true;
         }catch (Exception e){
             LOGGER.debug("wait error", e);

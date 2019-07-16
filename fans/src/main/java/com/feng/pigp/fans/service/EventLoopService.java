@@ -148,7 +148,7 @@ public class EventLoopService{
         String yestValue = handlerService.getContent(new SpiderQueryContentNode().setContentXPath(Common.M_LAST_VALUE));
         String allValue = handlerService.getContent(new SpiderQueryContentNode().setContentXPath(Common.M_ALL_VALUE));
         handlerService.switchWindowns();
-        LOGGER.info("user interactive value :{}-{}-{}-{}", user.getUsername(), goal.getUserName(), yestValue, allValue);
+        LOGGER.info("#### user interactive value #### :{}-{}-{}-{} ！！！", user.getUsername(), goal.getUserName(), yestValue, allValue);
     }
 
     /**
