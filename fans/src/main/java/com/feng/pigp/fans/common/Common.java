@@ -86,4 +86,9 @@ public class Common {
     public static String INTERNALE_SINA_LOGIN_URL = "https://login.sina.com.cn/signup/signin.php";
 
 
+    public static String M_SINA_URL = "https://m.weibo.cn/u/6117570574";
+    public static String M_SINA_INDEX = "//*[@id=\"app\"]/div[1]/div[1]/div[2]/nav/div/div/div/ul/li[1]/span";
+    public static String M_SINA_INTERACTIVE = "//*[@id=\"app\"]/div[1]/div[1]/div[3]/div/div/div[2]/div/div/div[3]/div";
+    public static String M_LAST_VALUE = "//*[@id=\"app\"]/div[1]/div[2]/div[3]/div/div/div[2]/div/div/div[1]/div/h3";
+    public static String M_ALL_VALUE = "//*[@id=\"app\"]/div[1]/div[2]/div[3]/div/div/div[2]/div/div/div[2]/div/h3";
 }

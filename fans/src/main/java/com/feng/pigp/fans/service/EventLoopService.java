@@ -3,6 +3,7 @@ package com.feng.pigp.fans.service;
 import com.feng.pigp.fans.common.Common;
 import com.feng.pigp.fans.common.EventTypeEnum;
 import com.feng.pigp.fans.exception.AccountErrorException;
+import com.feng.pigp.fans.exception.FansException;
 import com.feng.pigp.fans.model.MultiGoal;
 import com.feng.pigp.fans.model.User;
 import com.feng.pigp.fans.model.chrom.SpiderInputClickNode;
@@ -108,15 +109,23 @@ public class EventLoopService{
                 handlerService.login(user);
                 List<MultiGoal> goalList = goalPoolService.getMulti();
                 boolean isFirstGoal = true;
+
+                //检测互动值
                 for(MultiGoal goal : goalList) {
                     long goalStart = System.currentTimeMillis();
-                    goalCount++;
-                    processMultiGoal(goal, user, isFirstGoal);
-                    isFirstGoal = false;
-                    LOGGER.info("process url :{}-{}-{}", goalCount, goal.getUrl(), (System.currentTimeMillis()-goalStart));
+                    try {
+                        enterInteractivePage(user, goal);
+                        goalCount++;
+                        processMultiGoal(goal, user, isFirstGoal);
+                        isFirstGoal = false;
+                    }catch (FansException e){
+                        LOGGER.error("process error :{}-{}-{}", user.getUsername(), goal.getUserName(), goal.getUrl(), e);
+                    }finally {
+                        LOGGER.info("process url :{}-{}-{}", goalCount, goal.getUrl(), (System.currentTimeMillis()-goalStart));
+                    }
                 }
             }catch (AccountErrorException e){
-              //切换账号
+                //切换账号
                 continue;
             } catch (Throwable e){
                 LOGGER.error("run is error account is error : {}", user.getUsername(), e);
@@ -128,6 +137,18 @@ public class EventLoopService{
         }
 
         handlerService.close();
+    }
+
+    public void enterInteractivePage(User user, MultiGoal goal) {
+
+        handlerService.switchWindowns();
+        handlerService.refresh();
+        handlerService.click(new SpiderQueryContentNode().setContentXPath(Common.M_SINA_INDEX));
+        handlerService.click(new SpiderQueryContentNode().setContentXPath(Common.M_SINA_INTERACTIVE));
+        String yestValue = handlerService.getContent(new SpiderQueryContentNode().setContentXPath(Common.M_LAST_VALUE));
+        String allValue = handlerService.getContent(new SpiderQueryContentNode().setContentXPath(Common.M_ALL_VALUE));
+        handlerService.switchWindowns();
+        LOGGER.info("user interactive value :{}-{}-{}-{}", user.getUsername(), goal.getUserName(), yestValue, allValue);
     }
 
     /**

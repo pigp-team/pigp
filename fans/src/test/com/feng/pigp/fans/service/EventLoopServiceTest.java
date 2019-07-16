@@ -1,11 +1,7 @@
 package com.feng.pigp.fans.service;
 
-import com.feng.pigp.fans.common.EventTypeEnum;
-import com.feng.pigp.fans.model.Goal;
 import com.feng.pigp.fans.model.MultiGoal;
 import com.feng.pigp.fans.model.User;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -29,5 +25,12 @@ public class EventLoopServiceTest {
     public void multiRun() throws Exception {
 
         eventLoopService.runBatch(1);
+    }
+
+    @Test
+    public void mobileTest(){
+        User user = new User();
+        MultiGoal goal = new MultiGoal();
+        eventLoopService.enterInteractivePage(user, goal);
     }
 }

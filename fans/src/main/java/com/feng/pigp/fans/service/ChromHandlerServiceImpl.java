@@ -66,6 +66,9 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
         //ChromDriverSpiderUtil.click(getWebDriver(), Common.INTERNALE_SINA_LOGIN_URL);
         //ChromDriverSpiderUtil.wait(getWebDriver(), node.getUserNameXPath());
         boolean isSuccess = ChromDriverSpiderUtil.login(getWebDriver(), node);
+        if(!isSuccess){
+            loginWithOutLogout(user, openUrl, ++retryNum);
+        }
 
         if(isErrorUser()){
             LOGGER.error("account err : {}", user.getUsername());
@@ -238,6 +241,12 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
     }
 
     @Override
+    public boolean openNewWindows(User user, String url) {
+        ChromDriverSpiderUtil.openNewWindows(getWebDriver(), url);
+        return true;
+    }
+
+    @Override
     public String openUrlAndGetUser(Goal goal, User user, Node node) {
 
         try {
@@ -302,19 +311,9 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
         ChromDriverSpiderUtil.refresh(getWebDriver());
     }
 
-    private SpiderLoginEventNode fullInitLoginEventNode(User user) {
-
-        if(user==null){
-            throw new FansException("user is null");
-        }
-
-        SpiderLoginEventNode node = new SpiderLoginEventNode();
-        node.setLoginXPath(Common.Full_LOGIN_BUTTON);
-        node.setUserName(user.getUsername());
-        node.setUserNameXPath(Common.FULL_LOGIN_USERNAME);
-        node.setPasswd(user.getPwd());
-        node.setPasswdXPath(Common.FULL_LOGIN_PWD);
-        return node;
+    @Override
+    public void switchWindowns() {
+        ChromDriverSpiderUtil.switchOtherWindows(getWebDriver());
     }
 
     private SpiderLoginEventNode initLoginEventNode(User user, String openUrl) {
@@ -343,6 +342,7 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
             WebDriver webDriver = threadLocal.get();
             if (webDriver == null) {
                 webDriver = ChromDriverSpiderUtil.initDriver(0, 0);
+                ChromDriverSpiderUtil.openNewWindows(webDriver, Common.M_SINA_URL);
                 threadLocal.set(webDriver);
                 Thread.sleep(1000);
             }

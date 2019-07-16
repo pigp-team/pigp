@@ -1,14 +1,11 @@
 package com.feng.pigp.fans.util;
 
-import com.feng.pigp.fans.common.Common;
 import com.feng.pigp.fans.exception.FansException;
 import com.feng.pigp.fans.model.chrom.SpiderInputClickNode;
 import com.feng.pigp.fans.model.chrom.SpiderLoginEventNode;
 import com.feng.pigp.fans.model.chrom.SpiderMatchClickNode;
 import com.feng.pigp.fans.service.VerificationCodeService;
-import com.github.rjeschke.txtmark.Run;
 import com.google.common.collect.Maps;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -17,15 +14,8 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.*;
-import java.util.concurrent.TimeoutException;
+import java.util.*;
 
 /**
  * @author feng
@@ -173,7 +163,10 @@ public class ChromDriverSpiderUtil {
             submitElement.submit();
             ToolUtil.sleep(2000);
 
-            wait(driver, eventNode.getValidateCodeXPath());
+            boolean waitSuccess = wait(driver, eventNode.getValidateCodeXPath());
+            if(!waitSuccess){
+                return false;
+            }
             WebElement validate =driver.findElement(By.xpath(eventNode.getValidateCodeXPath()));
 
             for (int i = 0; i < 2; i++) {
@@ -453,47 +446,21 @@ public class ChromDriverSpiderUtil {
         return null;
     }
 
-    public static String switchWindows(WebDriver driver, List<String> excludeWindows) {
+    public static void switchOtherWindows(WebDriver driver) {
 
+        String curWindown = driver.getWindowHandle();
         Set<String> handleSet = driver.getWindowHandles();
+        if(handleSet.size()!=2){
+            return;
+        }
         for(String handle : handleSet){
-            if(excludeWindows.contains(handle)){
+            if(handle.equals(curWindown)){
                 continue;
             }
+
             driver.switchTo().window(handle);
-            return handle;
+            return;
         }
-
-        return null;
-    }
-
-    public static String switchWindows(WebDriver driver, String windows) {
-
-        Set<String> handleSet = driver.getWindowHandles();
-        for(String handle : handleSet){
-            if(windows.equals(handle)){
-                driver.switchTo().window(handle);
-                return handle;
-            }
-        }
-
-        return null;
-    }
-
-
-    public static long getHeight(WebDriver driver){
-
-        JavascriptExecutor js = (JavascriptExecutor)driver;
-        Object result = js.executeScript("return document.documentElement.scrollHeight");
-        return (long)result;
-    }
-
-
-    public static void executeJS(WebDriver driver, String jsCode) {
-
-        JavascriptExecutor js = (JavascriptExecutor)driver;
-        js.executeScript(jsCode);
-
     }
 
     public static int getSubElementCount(WebDriver driver, String xPath, String subPath) {
@@ -548,13 +515,32 @@ public class ChromDriverSpiderUtil {
         webDriver.navigate().refresh();
     }
 
-    public static void wait(WebDriver webDriver, String xPath) {
+    public static boolean wait(WebDriver webDriver, String xPath) {
 
         try {
             WebDriverWait wait = new WebDriverWait(webDriver, 5);
-            wait.until(ExpectedConditions.elementToBeSelected(By.xpath(xPath)));
+            wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.xpath(xPath)));
+            return true;
         }catch (Exception e){
             LOGGER.debug("wait error", e);
         }
+
+        return false;
+    }
+
+    public static void openNewWindows(WebDriver webDriver, String url) {
+
+        Set<String> windowSet = webDriver.getWindowHandles();
+
+        if(windowSet==null){
+            return;
+        }
+
+        if(windowSet.size()==1 &&  StringUtils.isEmpty(webDriver.getCurrentUrl())){
+            openUrl(webDriver, url, null);
+            return ;
+        }
+        JavascriptExecutor js = (JavascriptExecutor)webDriver;
+        js.executeScript("window.open(\""+url+"\")");
     }
 }

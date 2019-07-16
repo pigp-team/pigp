@@ -32,6 +32,8 @@ public interface HandlerService<T> {
 
     boolean isLogin(User user);
 
+    boolean openNewWindows(User user, String url);
+
     String openUrlAndGetUser(Goal goal, User user, T object);
 
     int getCommentCount(T  object);
@@ -45,4 +47,6 @@ public interface HandlerService<T> {
     void close();
 
     void refresh();
+
+    void switchWindowns();
 }
