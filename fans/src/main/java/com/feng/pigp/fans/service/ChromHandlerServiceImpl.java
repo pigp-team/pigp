@@ -72,7 +72,7 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
             throw new AccountErrorException("account user error");
         }
         //确认是否已经登录成功
-        if(!isLogin()){
+        if(!isLogin(user)){
             loginWithOutLogout(user,openUrl, ++retryNum);
         }
     }
@@ -221,11 +221,12 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
     }
 
     @Override
-    public boolean isLogin() {
+    public boolean isLogin(User user) {
 
         try {
             String content = ChromDriverSpiderUtil.getContent(getWebDriver(), Common.SINA_LOGIN_ACK);
             if(StringUtils.isNotEmpty(content)){
+                LOGGER.info("user login success :{}-{}", user.getUsername(), content);
                 return true;
             }
 
@@ -244,7 +245,7 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
             LOGGER.info("handler service open goal url  : {}-{}", goal.getId(), user.getUsername());
             MultiGoal multiGoal = (MultiGoal) goal;
             SpiderQueryContentNode queryNode = (SpiderQueryContentNode) node;
-            ChromDriverSpiderUtil.openUrl(getWebDriver(), multiGoal.getUrl());
+            ChromDriverSpiderUtil.openUrl(getWebDriver(), multiGoal.getUrl(), queryNode.getContentXPath());
             //如果页面加载失败，下一句操作会堵住
             String userName = ChromDriverSpiderUtil.getContent(getWebDriver(), queryNode.getContentXPath());
 

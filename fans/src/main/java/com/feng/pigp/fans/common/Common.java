@@ -11,7 +11,7 @@ public class Common {
     public static String SINA_LOGIN_USERNAME = "//*[@id=\"loginname\"]";
     public static String SINA_LOGIN_PWD = "//*[@id=\"pl_login_form\"]/div/div[3]/div[2]/div/input";
     public static String SINA_LOGIN_BUTTON = "//*[@id=\"pl_login_form\"]/div/div[3]/div[6]/a";
-    public static String SINA_LOGIN_ACK = "/html/body/div[2]/div[1]/div[1]/p[1]";
+    public static String SINA_LOGIN_ACK = "/html/body/div[4]/div[1]/div[1]/p[1]";
     public static String SINA_LOGOUT_TOP = "/html/body/div[1]/div/div/div[3]/div[2]/div[2]/a";
     public static String SINA_LOGOUT = "/html/body/div[1]/div/div/div[3]/div[2]/div[2]/div/ul/li[10]/a";
     public static String SINA_SEARCH_INPUT = "//*[@id=\"pl_common_top\"]/div/div/div[2]/input";

@@ -41,10 +41,17 @@ public class ChromDriverSpiderUtil {
     private static final int MAX_CLICK_ERR_COUNT = 5;
     private static ThreadLocal<Integer> clickCount = new ThreadLocal<>(); //memoery leak
 
-    public static boolean openUrl(WebDriver driver, String url){
+    public static boolean openUrl(WebDriver driver, String url, String xpath){
 
 
-        driver.get(url); //阻塞式的
+        try {
+            driver.get(url); //阻塞式的
+            WebDriverWait wait = new WebDriverWait(driver, 10);
+            wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(xpath)));
+            return true;
+        }catch (Exception e){
+            LOGGER.debug("wait error", e);
+        }
         return false;
     }
 
@@ -150,7 +157,7 @@ public class ChromDriverSpiderUtil {
             //打开页面
             long start = System.currentTimeMillis();
             if (StringUtils.isNotEmpty(eventNode.getLoginURL())) {
-                boolean result = openUrl(driver, eventNode.getLoginURL());
+                boolean result = openUrl(driver, eventNode.getLoginURL(), eventNode.getUserNameXPath());
                 LOGGER.error("open url time:{}", (System.currentTimeMillis()-start));
             }
 

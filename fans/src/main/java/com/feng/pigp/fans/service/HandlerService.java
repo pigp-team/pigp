@@ -30,7 +30,7 @@ public interface HandlerService<T> {
 
     boolean logout(User user);
 
-    boolean isLogin();
+    boolean isLogin(User user);
 
     String openUrlAndGetUser(Goal goal, User user, T object);
 
