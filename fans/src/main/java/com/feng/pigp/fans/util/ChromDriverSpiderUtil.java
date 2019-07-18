@@ -6,6 +6,7 @@ import com.feng.pigp.fans.model.chrom.SpiderInputClickNode;
 import com.feng.pigp.fans.model.chrom.SpiderLoginEventNode;
 import com.feng.pigp.fans.model.chrom.SpiderMatchClickNode;
 import com.feng.pigp.fans.service.VerificationCodeService;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.*;
@@ -28,6 +29,7 @@ public class ChromDriverSpiderUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(ChromDriverSpiderUtil.class);
     public static final String DRIVER_PATH = "C:\\Users\\feng\\AppData\\Local\\Google\\Chrome\\Application\\chromedriver.exe";
     private static final String SAVE_PATH =  "D:\\img\\";
+    private static final String BAN_IMG = "不显示任何图片";
     public static final int LOADING_WAITING_TIME = 2000;
     private static final int MAX_CLICK_ERR_COUNT = 5;
     private static ThreadLocal<Integer> clickCount = new ThreadLocal<>(); //memoery leak
@@ -615,5 +617,46 @@ public class ChromDriverSpiderUtil {
         }
         JavascriptExecutor js = (JavascriptExecutor)webDriver;
         js.executeScript("window.open(\""+url+"\")");
+    }
+
+    public static boolean chromImageSetting(WebDriver driver, boolean isBan) {
+
+        try {
+
+            openUrl(driver, Common.SETTING_IMAGE_URL, Common.SETTING_IMAGE_TXT);
+            WebElement element = driver.findElement(By.xpath("/html/body/settings-ui"));
+
+            List<String> list = Lists.newArrayList("div[id=container]>settings-main",
+                    "settings-basic-page",
+                    "div[id=advancedPage]>settings-section>settings-privacy-page",
+                    "settings-animated-pages>settings-subpage>category-default-setting",
+                    "settings-toggle-button",
+                    "div>div>div");
+
+            for (String str : list) {
+                WebElement root = getShadowRoot(driver, element);
+                element = root.findElement(By.cssSelector(str));
+            }
+
+            String content = element.getText();
+
+            if (BAN_IMG.equals(content) && !isBan) {
+                element.click();
+            }
+
+            if(!BAN_IMG.equals(content) && isBan){
+                element.click();
+            }
+
+            return true;
+        }catch (Exception e){
+            LOGGER.debug("chrom setting error", e);
+        }
+
+        return false;
+    }
+
+    public static WebElement getShadowRoot(WebDriver driver, WebElement element){
+        return (WebElement) ((JavascriptExecutor)driver).executeScript("return arguments[0].shadowRoot", element);
     }
 }

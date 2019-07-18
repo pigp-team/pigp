@@ -49,15 +49,7 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
 
     public void banLoadImage(boolean banImage){
 
-        ChromDriverSpiderUtil.openUrl(getWebDriver(), Common.SETTING_IMAGE_URL, Common.SETTING_IMAGE_TXT);
-        String content = ChromDriverSpiderUtil.getContent(getWebDriver(), Common.SETTING_IMAGE_TXT);
-        if(BAN_IMG.equals(content) && !banImage){//目前是禁用
-            ChromDriverSpiderUtil.click(getWebDriver(), Common.SETTING_IMAGE_TXT);
-        }
-
-        if(!BAN_IMG.equals(content) && banImage){
-            ChromDriverSpiderUtil.click(getWebDriver(), Common.SETTING_IMAGE_TXT);
-        }
+        ChromDriverSpiderUtil.chromImageSetting(getWebDriver(), banImage);
     }
 
     private boolean login(User user, String url) {
