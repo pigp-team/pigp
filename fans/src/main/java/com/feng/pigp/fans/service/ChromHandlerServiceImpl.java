@@ -8,8 +8,6 @@ import com.feng.pigp.fans.model.MultiGoal;
 import com.feng.pigp.fans.model.User;
 import com.feng.pigp.fans.model.chrom.*;
 import com.feng.pigp.fans.util.ChromDriverSpiderUtil;
-import com.feng.pigp.fans.util.ToolUtil;
-import com.feng.pigp.util.GsonUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
@@ -90,7 +88,7 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
 
     private boolean isErrorUser() {
 
-        String content = ChromDriverSpiderUtil.getContent(getWebDriver(), Common.ACCOUNT_ALL_ERROR);
+        String content = ChromDriverSpiderUtil.getContent(getWebDriver(), Common.ACCOUNT_ALL_ERROR, null);
         if(StringUtils.isEmpty(content)){
             return false;
 
@@ -101,30 +99,6 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
             return true;
         }
 
-        return true;
-    }
-
-    @Override
-    public boolean inputAndClick(String userId) {
-
-        SpiderInputClickNode node = new SpiderInputClickNode();
-        node.setClickXPath(Common.SINA_SEARCH_BUTTON);
-        node.setContent(userId);
-        node.setContentXPath(Common.SINA_SEARCH_INPUT);
-        ChromDriverSpiderUtil.inputAndClick(getWebDriver(), node);
-        return true;
-    }
-
-    @Override
-    public boolean enterUserIndex(String userId) {
-
-        SpiderMatchClickNode node = new SpiderMatchClickNode();
-        node.setClickXPath(Common.SINA_RELATIVE_USER);
-        node.setContentXPath(Common.SINA_RELATIVE_USER);
-        node.setStratIndex(1);
-        node.setEndIndex(4);
-        node.setMatchContent(userId);
-        ChromDriverSpiderUtil.matchAndClick(getWebDriver(), node);
         return true;
     }
 
@@ -190,7 +164,7 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
         node.setStratIndex(2);
         node.setEndIndex(12);
         node.setMatchContent(goal.getMatchContent());*/
-        ChromDriverSpiderUtil.matchAndClick(getWebDriver(), (SpiderMatchClickNode) node);
+        //ChromDriverSpiderUtil.matchAndClick(getWebDriver(), (SpiderMatchClickNode) node);
         return true;
     }
 
@@ -198,7 +172,7 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
     public boolean attention(Goal goal, User user, Node node) {
 
         //同意协议
-        if(AGREE_TEXT.equals(ChromDriverSpiderUtil.getContent(getWebDriver(), Common.AGREE_RULE))){
+        if(AGREE_TEXT.equals(ChromDriverSpiderUtil.getContent(getWebDriver(), Common.AGREE_RULE, null))){
             LOGGER.info("user agree protol : {}", user.getUsername());
             ChromDriverSpiderUtil.click(getWebDriver(), Common.AGREE_RULE);
         }
@@ -207,7 +181,7 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
         boolean success = ChromDriverSpiderUtil.click(getWebDriver(), queryNode.getContentXPath());
 
         //判断是否为异常账号：
-        if(ERROR_TEXT.equals(ChromDriverSpiderUtil.getContentWithKey(getWebDriver(), Common.ATTENTION_ALERT_ERROR,null))){
+        if(ERROR_TEXT.equals(ChromDriverSpiderUtil.getContent(getWebDriver(), Common.ATTENTION_ALERT_ERROR,null))){
             LOGGER.error("account unnormal :{}", user.getUsername());
             //点击取消
             ChromDriverSpiderUtil.click(getWebDriver(), Common.ATTENTION_ALERT_CLOSE);
@@ -235,7 +209,7 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
     public boolean isLogin(User user) {
 
         try {
-            String content = ChromDriverSpiderUtil.getContent(getWebDriver(), Common.SINA_LOGIN_ACK);
+            String content = ChromDriverSpiderUtil.getContent(getWebDriver(), Common.SINA_LOGIN_ACK, null);
             if(StringUtils.isNotEmpty(content)){
                 LOGGER.info("user login success :{}-{}", user.getUsername(), content);
                 return true;
@@ -264,7 +238,7 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
             SpiderQueryContentNode queryNode = (SpiderQueryContentNode) node;
             ChromDriverSpiderUtil.openUrl(getWebDriver(), multiGoal.getUrl(), queryNode.getContentXPath());
             //如果页面加载失败，下一句操作会堵住
-            String userName = ChromDriverSpiderUtil.getContent(getWebDriver(), queryNode.getContentXPath());
+            String userName = ChromDriverSpiderUtil.getContent(getWebDriver(), queryNode.getContentXPath(), null);
 
             if (StringUtils.isNotEmpty(userName)) {
                 LOGGER.info("handler service open goal url success  : {}-{}-{}", goal.getId(), user.getUsername(), userName);
@@ -289,7 +263,7 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
     public String getContent(Node object) {
 
         SpiderQueryContentNode node = (SpiderQueryContentNode)object;
-        return ChromDriverSpiderUtil.getContentWithKey(getWebDriver(), node.getContentXPath(), node.getKey());
+        return ChromDriverSpiderUtil.getContent(getWebDriver(), node.getContentXPath(), node.getKey());
     }
 
     @Override
@@ -349,7 +323,7 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
         try {
             WebDriver webDriver = threadLocal.get();
             if (webDriver == null) {
-                webDriver = ChromDriverSpiderUtil.initDriver(0, 0);
+                webDriver = ChromDriverSpiderUtil.initDriver(0, 0, false, false);
                 ChromDriverSpiderUtil.openNewWindows(webDriver, Common.M_SINA_URL);
                 threadLocal.set(webDriver);
                 Thread.sleep(1000);

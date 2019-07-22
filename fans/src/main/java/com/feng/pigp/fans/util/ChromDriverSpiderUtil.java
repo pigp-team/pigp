@@ -2,9 +2,10 @@ package com.feng.pigp.fans.util;
 
 import com.feng.pigp.fans.common.Common;
 import com.feng.pigp.fans.exception.FansException;
+import com.feng.pigp.fans.model.ProxyIp;
 import com.feng.pigp.fans.model.chrom.SpiderInputClickNode;
 import com.feng.pigp.fans.model.chrom.SpiderLoginEventNode;
-import com.feng.pigp.fans.model.chrom.SpiderMatchClickNode;
+import com.feng.pigp.fans.service.ProxyService;
 import com.feng.pigp.fans.service.VerificationCodeService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -12,8 +13,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.File;
@@ -31,93 +30,58 @@ public class ChromDriverSpiderUtil {
     private static final String SAVE_PATH =  "D:\\img\\";
     private static final String BAN_IMG = "不显示任何图片";
     public static final int LOADING_WAITING_TIME = 2000;
+    public static final int SMALL_WAITING_TIME = 200;
     private static final int MAX_CLICK_ERR_COUNT = 5;
+    private static final int SMALL_RETRY_NUM = 2;
     private static ThreadLocal<Integer> clickCount = new ThreadLocal<>(); //memoery leak
 
-    public static boolean openUrl(WebDriver driver, String url, String xpath){
-
+    public static void openUrl(WebDriver driver, String url, String xpath){
 
         try {
             driver.get(url); //阻塞式的
-            WebDriverWait wait = new WebDriverWait(driver, 10);
-            wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(xpath)));
-            return true;
         }catch (Exception e){
             LOGGER.debug("wait error", e);
-        }
-        return false;
-    }
-
-
-    public static void internalClick(WebElement element){
-
-        try{
-            element.click();
-            clickCount.set(0);
-        }catch (Exception e){
-            LOGGER.debug("click error");
-
-            if(clickCount.get()==null){
-                clickCount.set(0);
-            }
-
-            if(clickCount.get()+1 > MAX_CLICK_ERR_COUNT){
-                clickCount.set(0);
-                throw new FansException("click error");
-            }
-
-            clickCount.set(clickCount.get()+1);
+            //关闭当前窗口，使用另一个窗口
         }
     }
+
 
     /**
-     * 初始化driver对象
-     * driver对象相当于是浏览器对象
+     * 初始化浏览器，可以设置是否为headless模式，是否使用代理
+     * @param width
+     * @param height
+     * @param useHeadless
+     * @param useProxy
      * @return
      */
-    public static WebDriver initDriver(int width, int height){
+    public static WebDriver initDriver(int width, int height, boolean useHeadless, boolean useProxy){
 
         LOGGER.info("start init chrom driver");
-        // 设置ChromeDriver的路径
-        System.setProperty("webdriver.chrome.driver", DRIVER_PATH);
+        System.setProperty("webdriver.chrome.driver", DRIVER_PATH);// 设置ChromeDriver的路径
 
         ChromeOptions options = new ChromeOptions();
-        //设置浏览器最大化
-        options.addArguments("--start-maximized");
+        options.addArguments("--start-maximized");//设置浏览器最大化
         options.addArguments("--disable-gpu");
-        //options.addArguments("--start-fullscreen");
-        //options.addArguments("--headless");
-        //设置ssl证书支持
-        options.setCapability("acceptSslCerts", true);
-        //设置截屏支持
-        options.setCapability("takesScreenshot", true);
-        //设置css支持
-        options.setCapability("cssSelectorsEnabled", true);
 
-        /*ProxyIp ip = ProxyService.queryIp();
-        if(StringUtils.isNotEmpty(ip.getIp()) && ip.getPort()>0){
-            LOGGER.info("use proxy :{}-{}", ip.getIp(), ip.getPort());*/
-            Map<String, String> map = Maps.newHashMap();
-            //map.put("httpProxy", ip.getIp()+":"+ip.getPort());
-            map.put("httpProxy", "58.218.200.223:30198");
-            Proxy proxy = new Proxy(map);
-            //options.setProxy(proxy);
-        /*}*/
+        if(useHeadless) {
+            options.addArguments("--headless");
+        }
+
+        options.setCapability("acceptSslCerts", true);//设置ssl证书支持
+        options.setCapability("takesScreenshot", true);//设置截屏支持
+        options.setCapability("cssSelectorsEnabled", true);//设置css支持
+
+        Proxy proxy = null;
+        if(useProxy && (proxy=getProxy())!=null) {
+            options.setProxy(proxy);
+        }
 
         Map<String, Object> prefs = new HashMap<String, Object>();
+        prefs.put("profile.default_content_setting_values.notifications", 2); //禁用通知栏
+        prefs.put("profile.default_content_settings.cookies", 2); // 禁用cookie
+        options.setExperimentalOption("prefs", prefs); //设置参数
 
-        // 设置提醒的设置，2表示block
-        //prefs.put("profile.managed_default_content_settings.images", 2);
-        prefs.put("profile.default_content_setting_values.notifications", 2);
-        prefs.put("profile.default_content_settings.cookies", 2);
-        //prefs.put("--media-cache-size", 1024);
-        options.setExperimentalOption("prefs", prefs);
-
-        //创建driver对象
         WebDriver driver = new ChromeDriver(options);
-        //设置隐性等待（作用于全局）
-        //driver.manage().timeouts().implicitlyWait(1, TimeUnit.SECONDS);
-        //810*800
         if(width>0 && height>0) {
             driver.manage().window().setSize(new Dimension(width, height));
         }
@@ -125,11 +89,17 @@ public class ChromDriverSpiderUtil {
         return driver;
     }
 
+    /**
+     * 输入内容并点击
+     * @param webDriver
+     * @param node
+     * @return
+     */
     public static boolean inputAndClick(WebDriver webDriver, SpiderInputClickNode node){
         try {
             WebElement webElement = webDriver.findElement(By.xpath(node.getContentXPath()));
             webElement.sendKeys(node.getContent());
-            Thread.sleep(500);
+            ToolUtil.sleep(SMALL_WAITING_TIME);
             click(webDriver, node.getClickXPath());
             return true;
         } catch (Exception e) {
@@ -139,18 +109,20 @@ public class ChromDriverSpiderUtil {
     }
 
     /**
-     * 模拟登陆
+     * 模拟登陆，支持click与submit的登录
+     * 支持验证码， 会多一次点击登录操作（因为有的验证码是点击登录之后才会出现的）
      * @param driver
      * @param eventNode
+     * @return
      */
     public static boolean login(WebDriver driver, SpiderLoginEventNode eventNode){
 
+        LOGGER.info("start login, userName={}", eventNode.getUserName());
         try {
-            LOGGER.info("start login, userName={}", eventNode.getUserName());
-            //打开页面
+
             long start = System.currentTimeMillis();
             if (StringUtils.isNotEmpty(eventNode.getLoginURL())) {
-                boolean result = openUrl(driver, eventNode.getLoginURL(), eventNode.getUserNameXPath());
+                openUrl(driver, eventNode.getLoginURL(), eventNode.getUserNameXPath());
                 LOGGER.error("open url time:{}", (System.currentTimeMillis()-start));
             }
 
@@ -161,28 +133,18 @@ public class ChromDriverSpiderUtil {
             element.sendKeys(eventNode.getUserName());
             WebElement pwdElement = driver.findElement(By.xpath(eventNode.getPasswdXPath()));
             pwdElement.sendKeys(eventNode.getPasswd());
+            WebElement loginButtonElement = driver.findElement(By.xpath(eventNode.getLoginXPath()));
+            click(driver, loginButtonElement, eventNode.isSubmit());
 
-            ToolUtil.sleep(100);
-            WebElement submitElement = driver.findElement(By.xpath(eventNode.getLoginXPath()));
-            submitElement.submit();
-            //ToolUtil.sleep(2000);
+            if(StringUtils.isEmpty(eventNode.getValidateCodeXPath())){
+                return true;
+            }
 
-            boolean waitSuccess = waitSelected(driver, eventNode.getValidateCodeInputXPath());
-            /*if(!waitSuccess){
-                return false;
-            }*/
             WebElement validate =driver.findElement(By.xpath(eventNode.getValidateCodeXPath()));
 
-            for (int i = 0; i < 2; i++) {
+            for (int i=0; i<SMALL_RETRY_NUM; i++) {
 
-                byte[] dataBytes = screenShot(driver, validate.getRect().getX(), validate.getRect().getY(),
-                        Integer.parseInt(validate.getAttribute("width")), Integer.parseInt(validate.getAttribute("height")));
-
-                if(dataBytes==null){
-                    continue;
-                }
-                //获取解析的结果
-                String code = VerificationCodeService.distinguishCode(dataBytes);
+                String code = parseValidate(driver, validate);
                 //将原图片名称修改为正确解析的名称
                 if (StringUtils.isEmpty(code)) {
                     LOGGER.error("code error");
@@ -193,17 +155,12 @@ public class ChromDriverSpiderUtil {
                 WebElement codeInput = driver.findElement(By.xpath(eventNode.getValidateCodeInputXPath()));
                 codeInput.sendKeys(code);
 
-                //click(driver, eventNode.getLoginXPath());
-                submitElement.submit();
-                ToolUtil.sleep(2000);
-
-                String savePath = SAVE_PATH + code + ".png";
-                ToolUtil.saveValidate(dataBytes, savePath);
+                click(driver, loginButtonElement, eventNode.isSubmit());
+                ToolUtil.sleep(LOADING_WAITING_TIME);
                 return true;
             }
 
-            //click(driver, eventNode.getLoginXPath());
-            submitElement.submit();
+            click(driver, loginButtonElement, eventNode.isSubmit());
             LOGGER.info("{} : login success");
             return true;
         } catch (Exception e) {
@@ -213,155 +170,63 @@ public class ChromDriverSpiderUtil {
         return false;
     }
 
-    public static boolean loginTest(WebDriver driver, SpiderLoginEventNode eventNode){
+    /**
+     * 截屏幕后抠出验证码，并解析验证码
+     * @param driver
+     * @param validate
+     * @return
+     */
+    private static String parseValidate(WebDriver driver, WebElement validate) {
 
-        try {
-            LOGGER.info("start login, userName={}", eventNode.getUserName());
-            //打开页面
-            long start = System.currentTimeMillis();
-            if (StringUtils.isNotEmpty(eventNode.getLoginURL())) {
-                boolean result = openUrl(driver, eventNode.getLoginURL(), eventNode.getUserNameXPath());
-                LOGGER.error("open url time:{}", (System.currentTimeMillis() - start));
-            }
+        byte[] dataBytes = screenShot(driver, validate.getRect().getX(), validate.getRect().getY(),
+                Integer.parseInt(validate.getAttribute("width")), Integer.parseInt(validate.getAttribute("height")));
 
-            //查找元素
-            WebElement element = driver.findElement(By.xpath(eventNode.getUserNameXPath()));
-            LOGGER.error("open findElement time:{}", (System.currentTimeMillis() - start));
-            element.clear();
-            element.sendKeys(eventNode.getUserName());
-            WebElement pwdElement = driver.findElement(By.xpath(eventNode.getPasswdXPath()));
-            pwdElement.sendKeys(eventNode.getPasswd());
-
-            WebElement submitElement = driver.findElement(By.xpath(eventNode.getLoginXPath()));
-            submitElement.submit();
-            ToolUtil.sleep(2000);
-
-            boolean waitSuccess = wait(driver, eventNode.getValidateCodeXPath());
-            if (!waitSuccess) {
-                return false;
-            }
-            WebElement validate = driver.findElement(By.xpath(eventNode.getValidateCodeXPath()));
-
-            for (; ; ) {
-
-                byte[] dataBytes = screenShot(driver, validate.getRect().getX(), validate.getRect().getY(),
-                        Integer.parseInt(validate.getAttribute("width")), Integer.parseInt(validate.getAttribute("height")));
-
-                if (dataBytes == null) {
-                    continue;
-                }
-                //获取解析的结果
-                String code = VerificationCodeService.distinguishCode(dataBytes);
-                //将原图片名称修改为正确解析的名称
-                if (StringUtils.isEmpty(code)) {
-                    LOGGER.error("code error");
-                    click(driver, eventNode.getValidateCodeXPath());
-                    continue;
-                }
-
-                String savePath = SAVE_PATH + code + ".png";
-                ToolUtil.saveValidate(dataBytes, savePath);
-
-                click(driver, Common.INTERNALE_VALIDATE_CODE_IMAGE_CHANGE);
-            }
-        } catch (Exception e) {
-            LOGGER.error("login error", e);
+        if(dataBytes==null){
+            return null;
         }
 
-        return false;
-    }
-
-
-
-    public static boolean hasAlert(WebDriver driver){
-        try {
-            driver.switchTo().alert();
-            return true;
-        }catch (NoAlertPresentException e){
-            //noting todo
-        }
-
-        return false;
+        return VerificationCodeService.distinguishCode(dataBytes);
     }
 
     /**
-     * 自动翻页查找需要找的主题
-     * 该查找为精确查找
+     * 滑动滚动条到浏览器底部
      * @param driver
-     * @param topicXPath  获取专题标题的xpath
-     * @param topic 主题
-     * @param loadXPath   加载更多/获取下一页的xpath
      */
-    public static int findTopicWithNextPage(WebDriver driver, String topic, String topicXPath, String loadXPath){
-        int count = 1;
-        while(true) {
-            WebElement topicElement = null;
-            try {
-                topicElement = driver.findElement(By.xpath(String.format(topicXPath, count)));
-            }catch (Exception e){
-                //找不到触发加载更多
-                click(driver, loadXPath);
-            }
-
-            if(topicElement==null){
-                continue;
-            }
-
-            String tile = topicElement.getText();
-            if(tile.equals(topic)){
-                break;
-            }
-            count++;
-        }
-        return count;
-    }
-
     public static void scrollToBottom(WebDriver driver){
         JavascriptExecutor js = (JavascriptExecutor)driver;
         js.executeScript("document.documentElement.scrollTop=100000");
     }
 
     /**
-     * 自动翻页查找需要找的主题
-     * 该查找为精确查找
+     * 支持点击/提交（input）
      * @param driver
-     * @param topicXPath  获取专题标题的xpath
-     * @param topic 主题
-     * @param enterXPath  进入专题的xpath
-     * @param loadXPath   加载更多/获取下一页的xpath
+     * @param element
+     * @param isSubmit
+     * @return
      */
-    public static void findTopicWithNextPage(WebDriver driver, String topic, String topicXPath, String enterXPath, String loadXPath){
-        int count = 1;
-        int errCount = 0;
-        while(true) {
-            WebElement topicElement = null;
+    public static boolean click(WebDriver driver, WebElement element, boolean isSubmit){
 
-            if(errCount>=20){
-                click(driver, loadXPath);
+        try {
+            boolean isDisplay = element.isDisplayed();
+            if (!isDisplay) {
+                //滚动
+                JavascriptExecutor js = (JavascriptExecutor) driver;
+                js.executeScript("arguments[0].scrollIntoView()", element);
             }
 
-            try {
-                topicElement = driver.findElement(By.xpath(String.format(topicXPath, count)));
-            }catch (Exception e){
-                //找不到触发加载更多
-                JavascriptExecutor js = (JavascriptExecutor)driver;
-                js.executeScript("document.documentElement.scrollTop=100000");
-                //click(driver, loadXPath);
-                errCount++;
+            if(isSubmit){
+                element.submit();
+            }else{
+                element.click();
             }
-
-            if(topicElement==null){
-                continue;
-            }
-
-            errCount=0;
-            String tile = topicElement.getText();
-            if(tile.equals(topic)){
-                click(driver, String.format(enterXPath, count));
-                break;
-            }
-            count++;
+            //休眠2s等待页面加载
+            Thread.sleep(LOADING_WAITING_TIME);
+            return true;
+        }catch (Exception e){
+            LOGGER.debug("click error", e);
         }
+
+        return false;
     }
 
     /**
@@ -380,7 +245,7 @@ public class ChromDriverSpiderUtil {
                 JavascriptExecutor js = (JavascriptExecutor) driver;
                 js.executeScript("arguments[0].scrollIntoView()", clickElement);
             }
-            internalClick(clickElement);
+            clickElement.click();
             //休眠2s等待页面加载
             Thread.sleep(LOADING_WAITING_TIME);
             return true;
@@ -428,7 +293,7 @@ public class ChromDriverSpiderUtil {
                 JavascriptExecutor js = (JavascriptExecutor) driver;
                 js.executeScript("arguments[0].scrollIntoView()", clickElement);
             }
-            internalClick(clickElement);
+            clickElement.click();
             //休眠2s等待页面加载
             Thread.sleep(LOADING_WAITING_TIME);
             return true;
@@ -439,18 +304,17 @@ public class ChromDriverSpiderUtil {
         return false;
     }
 
-    public static boolean find(WebDriver driver, String xPath){
 
-        try {
-            WebElement element = driver.findElement(By.xpath(xPath));
-            return true;
-        }catch (Exception e){
-            LOGGER.debug("find error", e);
-        }
-
-        return false;
-    }
-
+    /**
+     * 通过TakesScreenshot进行截屏
+     * 通过ImageUtils进行抠图
+     * @param driver
+     * @param x
+     * @param y
+     * @param w
+     * @param h
+     * @return
+     */
     public static byte[] screenShot(WebDriver driver, int x, int y, int w, int h){
 
         File file = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
@@ -465,15 +329,16 @@ public class ChromDriverSpiderUtil {
         return null;
     }
 
-    public static int getIntContent(WebDriver driver, String xPath, String startChar, String endChar){
-
-        String str = getContent(driver, xPath);
-        int start = str.indexOf(startChar);
-        String temp = str.substring(start+1, str.indexOf(endChar, start+1));
-        return Integer.parseInt(temp);
-    }
-
-    public static String getContentWithKey(WebDriver driver, String xPath, String key) {
+    /**
+     * 获取指定标签的值
+     * 存在key：获取属性值
+     * 不存在key，获取text值
+     * @param driver
+     * @param xPath
+     * @param key
+     * @return
+     */
+    public static String getContent(WebDriver driver, String xPath, String key) {
 
         try {
             WebElement element = driver.findElement(By.xpath(xPath));
@@ -481,21 +346,7 @@ public class ChromDriverSpiderUtil {
                 return element.getAttribute(key);
             }
 
-            return element.getText();
-        } catch (Exception e) {
-            LOGGER.debug("getContent error", e);
-        }
-
-        return null;
-    }
-
-    public static String getContent(WebDriver driver, String xPath) {
-
-        try {
-            Thread.sleep(1000);
-            WebElement element = driver.findElement(By.xpath(xPath));
             boolean isDsiplayed = element.isDisplayed();
-            System.out.println("element is displayed : " + isDsiplayed);
             if (isDsiplayed) {
                 return element.getText();
             }
@@ -508,6 +359,10 @@ public class ChromDriverSpiderUtil {
         return null;
     }
 
+    /**
+     * 切换到另外一个窗口（前提是只有两个窗口）
+     * @param driver
+     */
     public static void switchOtherWindows(WebDriver driver) {
 
         String curWindown = driver.getWindowHandle();
@@ -515,6 +370,7 @@ public class ChromDriverSpiderUtil {
         if(handleSet.size()!=2){
             return;
         }
+
         for(String handle : handleSet){
             if(handle.equals(curWindown)){
                 continue;
@@ -525,6 +381,13 @@ public class ChromDriverSpiderUtil {
         }
     }
 
+    /**
+     * 获取子元素的个数
+     * @param driver
+     * @param xPath
+     * @param subPath
+     * @return
+     */
     public static int getSubElementCount(WebDriver driver, String xPath, String subPath) {
 
         WebElement element = driver.findElement(By.xpath(xPath));
@@ -532,36 +395,26 @@ public class ChromDriverSpiderUtil {
         return elementList==null?0:elementList.size();
     }
 
-    public static void matchAndClickWithOutIndex(WebDriver driver, SpiderMatchClickNode node) {
-
+    /**
+     * 判断是否存在弹窗
+     * @param driver
+     * @return
+     */
+    public static boolean hasAlert(WebDriver driver){
         try {
-            String content = getContent(driver, node.getContentXPath());
-            if(StringUtils.isNotEmpty(content) && content.contains(node.getMatchContent())){
-                clickOrNot(driver, node.getClickKey(), node.getClickContent(),node.getClickXPath());
-            }
-        }catch (Exception e){
-            LOGGER.debug("matchAndClick error", e);
-        }
-    }
-
-    public static int matchAndClick(WebDriver driver, SpiderMatchClickNode node) {
-
-        for(int i=node.getStratIndex(); i<=node.getEndIndex(); i++){
-
-            try {
-                String content = getContent(driver, String.format(node.getContentXPath(), i));
-                if(StringUtils.isNotEmpty(content) && content.contains(node.getMatchContent())){
-                    clickOrNot(driver, node.getClickKey(), node.getClickContent(),String.format(node.getClickXPath(), i));
-                    return i;
-                }
-            }catch (Exception e){
-                LOGGER.debug("matchAndClick error", e);
-            }
+            driver.switchTo().alert();
+            return true;
+        }catch (NoAlertPresentException e){
+            //noting todo
         }
 
-        return -1;
+        return false;
     }
 
+    /**
+     * 关闭弹窗
+     * @param webDriver
+     */
     public static void closeAlert(WebDriver webDriver) {
 
         webDriver.switchTo().alert().accept();
@@ -572,37 +425,19 @@ public class ChromDriverSpiderUtil {
         }
     }
 
+    /**
+     * 刷新窗口
+     * @param webDriver
+     */
     public static void refresh(WebDriver webDriver) {
-
         webDriver.navigate().refresh();
     }
 
-    public static boolean waitSelected(WebDriver webDriver, String xPath) {
-
-        try {
-            WebDriverWait wait = new WebDriverWait(webDriver, 3);
-            wait.until(ExpectedConditions.elementToBeSelected(By.xpath(xPath)));
-            return true;
-        }catch (Exception e){
-            LOGGER.debug("wait error", e);
-        }
-
-        return false;
-    }
-
-    public static boolean wait(WebDriver webDriver, String xPath) {
-
-        try {
-            WebDriverWait wait = new WebDriverWait(webDriver, 5);
-            wait.until(ExpectedConditions.invisibilityOfElementLocated(By.xpath(xPath)));
-            return true;
-        }catch (Exception e){
-            LOGGER.debug("wait error", e);
-        }
-
-        return false;
-    }
-
+    /**
+     * 打开一个新的窗口，driver没有提供原生方法，需要使用js
+     * @param webDriver
+     * @param url
+     */
     public static void openNewWindows(WebDriver webDriver, String url) {
 
         Set<String> windowSet = webDriver.getWindowHandles();
@@ -619,6 +454,12 @@ public class ChromDriverSpiderUtil {
         js.executeScript("window.open(\""+url+"\")");
     }
 
+    /**
+     * 禁用/开启 加载图片设置， chrom设置页面
+     * @param driver
+     * @param isBan
+     * @return
+     */
     public static boolean chromImageSetting(WebDriver driver, boolean isBan) {
 
         try {
@@ -656,7 +497,29 @@ public class ChromDriverSpiderUtil {
         return false;
     }
 
+    /**
+     * 存在shadowRoot元素的页面，xpath使用不了（曲线救国）
+     * @param driver
+     * @param element
+     * @return
+     */
     public static WebElement getShadowRoot(WebDriver driver, WebElement element){
         return (WebElement) ((JavascriptExecutor)driver).executeScript("return arguments[0].shadowRoot", element);
+    }
+
+    /**
+     * 获取代理对象
+     * @return
+     */
+    public static Proxy getProxy() {
+        ProxyIp ip = ProxyService.queryIp();
+        if(StringUtils.isNotEmpty(ip.getIp()) && ip.getPort()>0){
+            LOGGER.info("use proxy :{}-{}", ip.getIp(), ip.getPort());
+            Map<String, String> map = Maps.newHashMap();
+            map.put("httpProxy", ip.getIp()+":"+ip.getPort());
+            Proxy proxy = new Proxy(map);
+            return proxy;
+        }
+        return null;
     }
 }

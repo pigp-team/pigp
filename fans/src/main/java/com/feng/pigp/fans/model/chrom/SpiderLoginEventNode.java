@@ -15,6 +15,7 @@ public class SpiderLoginEventNode extends Node{
     private String loginXPath;
     private String validateCodeXPath;
     private String validateCodeInputXPath;
+    private boolean isSubmit; //true:submit; false:click
 
     public String getValidateCodeInputXPath() {
         return validateCodeInputXPath;
@@ -78,5 +79,13 @@ public class SpiderLoginEventNode extends Node{
 
     public void setValidateCodeXPath(String validateCodeXPath) {
         this.validateCodeXPath = validateCodeXPath;
+    }
+
+    public boolean isSubmit() {
+        return isSubmit;
+    }
+
+    public void setSubmit(boolean submit) {
+        isSubmit = submit;
     }
 }

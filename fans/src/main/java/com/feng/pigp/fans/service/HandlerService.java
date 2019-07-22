@@ -14,10 +14,6 @@ public interface HandlerService<T> {
 
     boolean login(User user);
 
-    boolean inputAndClick(String userId);
-
-    boolean enterUserIndex(String userId);
-
     boolean like(Goal goal, User user, T object);
 
     boolean share(Goal goal, User user, T object);
