@@ -17,6 +17,10 @@ public class ToolUtil {
     private static Logger LOGGER = LoggerFactory.getLogger(ToolUtil.class);
     private static Random RANDOM = new Random();
 
+    /**
+     * 休眠
+     * @param mill
+     */
     public static void  sleep(int mill){
 
         try {
@@ -26,6 +30,11 @@ public class ToolUtil {
         }
     }
 
+    /**
+     * 随机函数
+     * @param value
+     * @return
+     */
     public static boolean validateRandom(int value){
 
         int temp = RANDOM.nextInt(100);
@@ -33,6 +42,11 @@ public class ToolUtil {
 
     }
 
+    /**
+     * 获取图片的字节流
+     * @param file
+     * @return
+     */
     public static byte[] getBytes(File file){
 
         if(file==null){
@@ -74,7 +88,12 @@ public class ToolUtil {
         return s;
     }
 
-    public static void saveValidate(byte[] dataBytes, String savePath) {
+    /**
+     * 将字节流保存在图片
+     * @param dataBytes
+     * @param savePath
+     */
+    public static void saveFile(byte[] dataBytes, String savePath) {
 
         if(dataBytes==null || StringUtils.isEmpty(savePath)){
             return;

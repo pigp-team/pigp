@@ -16,6 +16,15 @@ import java.io.IOException;
  */
 public class ImageUtils {
 
+    /**
+     * 抠图，根据（x,y）坐标，以及高、宽
+     * @param file
+     * @param x
+     * @param y
+     * @param w
+     * @param h
+     * @return
+     */
     public static byte[] cutImageLeftAndRight(File file, int x, int y, int w, int h){
         try {
             BufferedImage bufImage = ImageIO.read(file);
@@ -32,23 +41,19 @@ public class ImageUtils {
         return null;
     }
 
+    /**
+     * 获取灰色图，去除颜色
+     * @param image
+     * @return
+     * @throws IOException
+     */
     public static byte[] getGrayImage(BufferedImage image) throws IOException {
 
-        // 转灰度图像
         BufferedImage grayImage = new BufferedImage(image.getWidth(), image.getHeight(),
                 BufferedImage.TYPE_BYTE_GRAY);
         new ColorConvertOp(ColorSpace.getInstance(ColorSpace.CS_GRAY), null).filter(image, grayImage);
-        // getData方法返回BufferedImage的raster成员对象
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         ImageIO.write(grayImage, "png", out);
         return out.toByteArray();
-    }
-
-    public static void main(String[] args) throws IOException {
-
-        File file = new File("C:\\Users\\feng\\Desktop\\images.jpg");
-        BufferedImage bufImage = ImageIO.read(file);
-        byte[] result = getGrayImage(bufImage);
-        ToolUtil.saveValidate(result, "D:\\img\\test_gray.png");
     }
 }
