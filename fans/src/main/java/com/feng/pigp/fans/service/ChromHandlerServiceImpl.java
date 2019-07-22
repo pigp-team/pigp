@@ -27,7 +27,6 @@ public class ChromHandlerServiceImpl implements HandlerService<Node> {
     private static final int MAX_RETRY = 3;
     private static final String ERROR_TEXT = "异常";
     private static final String AGREE_TEXT = "同意";
-    private static final String BAN_IMG = "不显示任何图片";
     private ThreadLocal<WebDriver> threadLocal = new ThreadLocal<WebDriver>();
 
     @Override
