@@ -11,6 +11,7 @@ public class AtomicInteger extends Number implements java.io.Serializable {
 
     private static Unsafe getUnsafeInstance(){
         Field theUnsafeInstance = null;
+        System.out.println("hhah ");
         try {
             theUnsafeInstance =Unsafe.class.getDeclaredField("theUnsafe");
             theUnsafeInstance.setAccessible(true);
